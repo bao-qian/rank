@@ -7,7 +7,8 @@ from model import Model
 from sqlalchemy import (
     Column,
     String,
-    exists)
+    exists,
+)
 
 from utility import log
 
