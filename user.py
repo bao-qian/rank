@@ -52,7 +52,11 @@ class User:
                 total_commit += total
                 if login == self.login:
                     contributed_commit = total
-            self.contribution.append((contributed_commit, total_commit, r.url))
+            if total_commit != 0:
+                rate = r.start_count * contributed_commit / total_commit
+            else:
+                rate = 0
+            self.contribution.append((rate, r.language, contributed_commit, total_commit, r.url))
 
     @staticmethod
     def query_china_user():
