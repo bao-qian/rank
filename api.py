@@ -1,6 +1,7 @@
 import json
 
 import requests
+from requests import HTTPError
 
 import secret
 from model import Model
@@ -39,12 +40,12 @@ class API(Model.base):
             graph_query=query,
             response=response,
         )
-        Model.session.add(c)
+        Model.session.merge(c)
         Model.session.commit()
 
     @classmethod
-    def get_v4(cls, query):
-        if cls._exist(query):
+    def get_v4(cls, query, force=False):
+        if not force and cls._exist(query):
             c = cls._get(query)
             r = json.loads(c.response)
             return r
@@ -55,10 +56,31 @@ class API(Model.base):
             }
             headers = {'Authorization': 'bearer {}'.format(secret.token)}
             r = requests.post(url=url, json=json_query, headers=headers)
-            cls._set(query, r.text)
-            j = r.json()
-            return j
+            if r.status_code == 200:
+                j = r.json()
+                cls._set(query, r.text)
+                return j
+            else:
+                message = 'url {} get error code {}'.format(url, r.status_code)
+                raise HTTPError(message, response=r)
 
     @classmethod
-    def get_v3(cls, query):
-        pass
+    def get_v3(cls, query, force=False):
+        if not force and cls._exist(query):
+            c = cls._get(query)
+            r = json.loads(c.response)
+            return r
+        else:
+            base = 'https://api.github.com'
+            url = '{}{}'.format(base, query)
+            log('get v3 url', url)
+            headers = {'Authorization': 'bearer {}'.format(secret.token)}
+            r = requests.get(url=url, headers=headers)
+            if r.status_code == 200:
+                log('get v3 r', r)
+                j = r.json()
+                cls._set(query, r.text)
+                return j
+            else:
+                message = 'url {} get error code {}'.format(url, r.status_code)
+                raise HTTPError(message, response=r)

@@ -1,9 +1,16 @@
+from api import API
 from utility import log, log_dict
 
 
 class Repository:
     def __init__(self, node):
         self.name = node['name']
+        self.name_with_owner = node['nameWithOwner']
+        p = node['primaryLanguage']
+        if p is not None:
+            self.language = p['name']
+        else:
+            self.language = None
         self.url = node['url']
         self.start_count = node['stargazers']['totalCount']
 
@@ -22,16 +29,23 @@ class Repository:
             r = cls(n)
             yield r
 
+
+
     @staticmethod
     def _query():
         q = """
         edges {
               node {
+                    name  
+                    nameWithOwner
+                    url
+                    primaryLanguage {
+                        name
+                    }       
                     stargazers {
                         totalCount
                     }
-                    name
-                    url
+                    
                 }
         }
         """
@@ -56,3 +70,10 @@ class Repository:
         }}
         """.format(r)
         return q
+
+    @classmethod
+    def query_for_contributors(cls, name_with_owner):
+        q = '/repos/{}/stats/contributors'.format(name_with_owner)
+        return q
+
+

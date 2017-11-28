@@ -1,3 +1,6 @@
+from requests import HTTPError
+
+from api import API
 from repository import Repository
 from utility import log, log_dict
 
@@ -5,6 +8,7 @@ from utility import log, log_dict
 class User:
     def __init__(self, node):
         self.name = node['name']
+        self.login = node['login']
         self.url = node['url']
         r1 = node['pinnedRepositories']['edges']
         r2 = node['repositories']['edges']
@@ -17,6 +21,7 @@ class User:
         self.repositories = list(r)
         self.pinned_repositories = r1
         self.popular_repositories = r2
+        self.contribution = []
 
     def __repr__(self):
         classname = self.__class__.__name__
@@ -32,6 +37,23 @@ class User:
             n = node['node']
             yield User(n)
 
+    def add_contribution(self):
+        for r in self.repositories:
+            q = Repository.query_for_contributors(r.name_with_owner)
+            try:
+                cs = API.get_v3(q)
+            except HTTPError:
+                cs = []
+            total_commit = 0
+            contributed_commit = 0
+            for c in cs:
+                login = c['author']['login']
+                total = c['total']
+                total_commit += total
+                if login == self.login:
+                    contributed_commit = total
+            self.contribution.append((contributed_commit, total_commit, r.url))
+
     @staticmethod
     def query_china_user():
         r1 = Repository.query_pinned()
@@ -42,6 +64,7 @@ class User:
                     edges {{
                         node {{
                             ... on User {{
+                            login
                             name
                             url
                             {0}
