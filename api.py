@@ -1,6 +1,7 @@
 import json
 
 import requests
+import time
 from requests import HTTPError
 
 import secret
@@ -76,11 +77,23 @@ class API(Model.base):
             log('get v3 url', url)
             headers = {'Authorization': 'bearer {}'.format(secret.token)}
             r = requests.get(url=url, headers=headers)
+
+            rate_limit = int(r.headers['X-RateLimit-Limit'])
+            rate_reset = int(r.headers['X-RateLimit-Reset'])
+            rate_remaing = r.headers['X-RateLimit-Remaining']
+            log('rate limit <{}> rate remaing <{}>'.format(rate_limit, rate_remaing))
+            now = int(time.time())
+            log('rate will reset in <{}>'.format(now - rate_reset))
+
             if r.status_code == 200:
                 log('get v3 r', r)
                 j = r.json()
                 cls._set(query, r.text)
                 return j
+            elif rate_remaing == 0:
+                log('no rate remaing')
+                # 保险起见多睡 5 s
+                time.sleep(now - rate_limit + 5)
             else:
                 message = 'url {} get error code {}'.format(url, r.status_code)
                 raise HTTPError(message, response=r)
