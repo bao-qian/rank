@@ -21,24 +21,29 @@ def main():
     users = list(User.users_from_nodes(nodes))
 
     s = set([])
-    for u in users[:10]:
+    for u in users:
         l = len(u.repositories)
         s.add(l)
         log('user stat <{}> <{}> <{}>'.format(l, u.name, u.url))
     log('repo count', s)
 
-    for u in users[:10]:
+    for i, u in enumerate(users):
+        log('第{}个用户'.format(i, u.login))
         u.add_contribution()
 
     wrong_contribution = []
-    for u in users[:10]:
+    cs = []
+    for u in users:
         log('contribution', len(u.contribution))
         log(json.dumps(u.contribution, indent=4))
         for c in u.contribution:
-            log(c)
-            if c[0] == 0:
+            cs.append(c)
+            if c[1] == 0 and r.language is not None and c[0] > 0:
                 wrong_contribution.append(c)
 
+    cs = sorted(cs, key=lambda c: c[0])
+    for c in cs:
+        log(c)
     log('wrong_contribution', wrong_contribution)
 
 

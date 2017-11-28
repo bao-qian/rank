@@ -36,7 +36,7 @@ class API(Model.base):
 
     @classmethod
     def _set(cls, query, response):
-        log('add result for query', query, response)
+        log('add result for query', query)
         c = API(
             graph_query=query,
             response=response,
@@ -90,7 +90,7 @@ class API(Model.base):
                 j = r.json()
                 cls._set(query, r.text)
                 return j
-            elif rate_remaing == 0:
+            elif rate_remaing >= 0:
                 log('no rate remaing')
                 # 保险起见多睡 5 s
                 time.sleep(now - rate_limit + 5)
