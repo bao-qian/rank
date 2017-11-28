@@ -41,9 +41,13 @@ def main():
             if c[0] == 0 or c[1] is None or c[2] == 0:
                 wrong_contribution.append(c)
 
-    cs = sorted(cs, key=lambda c: c[0])
-    for c in cs:
-        log(c)
+    for u in users:
+        u.calculate_star()
+
+    us = sorted(users, key=lambda u: u.star, reverse=True)
+    for i, u in enumerate(us):
+        log('user star: <{}> <{}> <{}>'.format(i, u.login, u.star))
+
     log('wrong_contribution', wrong_contribution)
 
 
