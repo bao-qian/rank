@@ -2,7 +2,7 @@
 
 - [ ] github 中国区用户数据
    - [x] location 含有 china。
-   - [x] 先爬 100 个，排序。
+   - [x] 先爬 100 个，排序。
    - [ ] 测试成功再爬1000个，再爬所有（2000）。
    - [ ] 可以追加没有写 location 的进列表。
 - [x] 统计 pinned repo，没有的话就 popular repo。org 不自己挂出来的就不管了，太多了。
