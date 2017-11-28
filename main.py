@@ -1,5 +1,6 @@
 import json
 
+import config
 from model import init_db
 from user import User
 from utility import (
@@ -20,33 +21,42 @@ def main():
     nodes = r['data']['search']['edges']
     users = list(User.users_from_nodes(nodes))
 
+    for e in config.extra_user:
+        q = User.query_user(e)
+        log('query', q)
+        r = API.get_v4(q)
+        log_dict(r)
+        node = r['data']['user']
+        u = User.user_from_node(node)
+        users.append(u)
+
     s = set([])
-    for u in users:
-        l = len(u.repositories)
+    for e in users:
+        l = len(e.repositories)
         s.add(l)
-        log('user stat <{}> <{}> <{}>'.format(l, u.name, u.url))
+        log('user stat <{}> <{}> <{}>'.format(l, e.name, e.url))
     log('repo count', s)
 
-    for i, u in enumerate(users):
-        log('第{}个用户'.format(i, u.login))
-        u.add_contribution()
+    for i, e in enumerate(users):
+        log('第{}个用户'.format(i, e.login))
+        e.add_contribution()
 
     wrong_contribution = []
     cs = []
-    for u in users:
-        log('contribution', len(u.contribution))
-        log(json.dumps(u.contribution, indent=4))
-        for c in u.contribution:
+    for e in users:
+        log('contribution', len(e.contribution))
+        log(json.dumps(e.contribution, indent=4))
+        for c in e.contribution:
             cs.append(c)
             if c[0] == 0 or c[1] is None or c[2] == 0:
                 wrong_contribution.append(c)
 
-    for u in users:
-        u.calculate_star()
+    for e in users:
+        e.calculate_star()
 
     us = sorted(users, key=lambda u: u.star, reverse=True)
-    for i, u in enumerate(us):
-        log('user star: <{}> <{}> <{}>'.format(i, u.login, u.star))
+    for i, e in enumerate(us):
+        log('user star: <{}> <{}> <{}>'.format(i, e.login, e.star))
 
     log('wrong_contribution', wrong_contribution)
 
