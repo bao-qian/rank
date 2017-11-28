@@ -68,7 +68,7 @@ class User:
 
     def calculate_star(self):
         for c in self.contribution:
-            if c[0] == 0 or c[1] is None or c[1] == 'HTML' or c[2] == 0:
+            if c[0] == 0 or c[1] is None or c[2] == 0:
                 continue
             else:
                 self.star += c[0]

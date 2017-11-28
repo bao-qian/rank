@@ -1,3 +1,4 @@
+import config
 from api import API
 from utility import log, log_dict
 from pyquery import PyQuery
@@ -48,7 +49,7 @@ class Repository:
         if len(files) > 0:
             primary_language = max(files, key=lambda f: f[0])[1]
             log('validate code <{}> <{}>'.format(primary_language, files))
-            if primary_language not in ['HTML', 'Markdown', 'Text']:
+            if primary_language not in config.invalid_language:
                 self.is_code = True
 
     @staticmethod
