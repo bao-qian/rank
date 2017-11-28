@@ -51,7 +51,7 @@ def main():
             if c[0] == 0 or c[1] is None or c[2] == 0:
                 wrong_contribution.append(c)
 
-    for u in users[:10]:
+    for u in users:
         u.calculate_star()
 
     us = sorted(users, key=lambda u: u.star, reverse=True)
