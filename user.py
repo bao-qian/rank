@@ -38,6 +38,10 @@ class User:
             n = node['node']
             yield User(n)
 
+    @classmethod
+    def user_from_node(cls, node):
+        return User(node)
+
     def add_contribution(self):
         for r in self.repositories:
             q = Repository.query_for_contributors(r.name_with_owner)
@@ -61,7 +65,7 @@ class User:
 
     def calculate_star(self):
         for c in self.contribution:
-            if c[0] == 0 or c[1] is None or c[2] == 0:
+            if c[0] == 0 or c[1] is None or c[1] == 'HTML' or c[2] == 0:
                 continue
             else:
                 self.star += c[0]
@@ -87,4 +91,21 @@ class User:
                 }}
             }}
             """.format(r1, r2)
+        return q
+
+    @staticmethod
+    def query_user(user):
+        r1 = Repository.query_pinned()
+        r2 = Repository.query_popular()
+        q = """
+            {{
+                user(login: "{0}") {{
+                    login
+                    name
+                    url
+                    {1}
+                    {2}
+                }}
+            }}
+            """.format(user, r1, r2)
         return q
