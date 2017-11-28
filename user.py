@@ -22,6 +22,7 @@ class User:
         self.pinned_repositories = r1
         self.popular_repositories = r2
         self.contribution = []
+        self.star = 0
 
     def __repr__(self):
         classname = self.__class__.__name__
@@ -57,6 +58,13 @@ class User:
             else:
                 rate = 0
             self.contribution.append((rate, r.language, contributed_commit, total_commit, r.url))
+
+    def calculate_star(self):
+        for c in self.contribution:
+            if c[0] == 0 or c[1] is None or c[2] == 0:
+                continue
+            else:
+                self.star += c[0]
 
     @staticmethod
     def query_china_user():
