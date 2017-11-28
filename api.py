@@ -97,3 +97,22 @@ class API(Model.base):
             else:
                 message = 'url {} get error code {}'.format(url, r.status_code)
                 raise HTTPError(message, response=r)
+
+    @classmethod
+    def get_crawler(cls, query, force=False):
+        if not force and cls._exist(query):
+            c = cls._get(query)
+            html = c.response
+            return html
+        else:
+            base = 'https://github.com'
+            url = '{}{}'.format(base, query)
+            log('get crawler url', url)
+            agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " \
+                    "AppleWebKit/537.36 (KHTML, like Gecko) " \
+                    "Chrome/62.0.3202.94 Safari/537.36"
+            headers = {'User-Agent': agent}
+            r = requests.get(url=url, headers=headers)
+            html = r.text
+            cls._set(query, html)
+            return html

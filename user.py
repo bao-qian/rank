@@ -44,24 +44,27 @@ class User:
 
     def add_contribution(self):
         for r in self.repositories:
-            q = Repository.query_for_contributors(r.name_with_owner)
-            try:
-                cs = API.get_v3(q)
-            except HTTPError:
-                cs = []
-            total_commit = 0
-            contributed_commit = 0
-            for c in cs:
-                login = c['author']['login']
-                total = c['total']
-                total_commit += total
-                if login == self.login:
-                    contributed_commit = total
-            if total_commit != 0:
-                rate = r.start_count * contributed_commit / total_commit
-            else:
-                rate = 0
-            self.contribution.append((rate, r.language, contributed_commit, total_commit, r.url))
+            r.validate_code()
+            if r.is_code:
+                log('valid code repo', r.name_with_owner)
+                q = Repository.query_for_contributors(r.name_with_owner)
+                try:
+                    cs = API.get_v3(q)
+                except HTTPError:
+                    cs = []
+                total_commit = 0
+                contributed_commit = 0
+                for c in cs:
+                    login = c['author']['login']
+                    total = c['total']
+                    total_commit += total
+                    if login == self.login:
+                        contributed_commit = total
+                if total_commit != 0:
+                    rate = r.start_count * contributed_commit / total_commit
+                else:
+                    rate = 0
+                self.contribution.append((rate, r.language, contributed_commit, total_commit, r.url))
 
     def calculate_star(self):
         for c in self.contribution:

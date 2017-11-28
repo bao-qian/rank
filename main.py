@@ -28,35 +28,35 @@ def main():
         log_dict(r)
         node = r['data']['user']
         u = User.user_from_node(node)
-        users.append(u)
+        users.insert(0, u)
 
     s = set([])
-    for e in users:
-        l = len(e.repositories)
+    for u in users:
+        l = len(u.repositories)
         s.add(l)
-        log('user stat <{}> <{}> <{}>'.format(l, e.name, e.url))
+        log('user stat <{}> <{}> <{}>'.format(l, u.name, u.url))
     log('repo count', s)
 
-    for i, e in enumerate(users):
-        log('第{}个用户'.format(i, e.login))
-        e.add_contribution()
+    for i, u in enumerate(users):
+        log('第{}个用户'.format(i, u.login))
+        u.add_contribution()
 
     wrong_contribution = []
     cs = []
-    for e in users:
-        log('contribution', len(e.contribution))
-        log(json.dumps(e.contribution, indent=4))
-        for c in e.contribution:
+    for u in users:
+        log('contribution', len(u.contribution))
+        log(json.dumps(u.contribution, indent=4))
+        for c in u.contribution:
             cs.append(c)
             if c[0] == 0 or c[1] is None or c[2] == 0:
                 wrong_contribution.append(c)
 
-    for e in users:
-        e.calculate_star()
+    for u in users[:10]:
+        u.calculate_star()
 
     us = sorted(users, key=lambda u: u.star, reverse=True)
-    for i, e in enumerate(us):
-        log('user star: <{}> <{}> <{}>'.format(i, e.login, e.star))
+    for i, u in enumerate(us):
+        log('user star: <{}> <{}> <{}>'.format(i, u.login, u.star))
 
     log('wrong_contribution', wrong_contribution)
 
