@@ -80,7 +80,7 @@ class API(Model.base):
 
             rate_limit = int(r.headers['X-RateLimit-Limit'])
             rate_reset = int(r.headers['X-RateLimit-Reset'])
-            rate_remaing = r.headers['X-RateLimit-Remaining']
+            rate_remaing = int(r.headers['X-RateLimit-Remaining'])
             log('rate limit <{}> rate remaing <{}>'.format(rate_limit, rate_remaing))
             now = int(time.time())
             log('rate will reset in <{}>'.format(now - rate_reset))
@@ -90,7 +90,7 @@ class API(Model.base):
                 j = r.json()
                 cls._set(query, r.text)
                 return j
-            elif rate_remaing >= 0:
+            elif rate_remaing == 0:
                 log('no rate remaing')
                 # 保险起见多睡 5 s
                 time.sleep(now - rate_limit + 5)

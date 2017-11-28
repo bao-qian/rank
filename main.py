@@ -38,7 +38,7 @@ def main():
         log(json.dumps(u.contribution, indent=4))
         for c in u.contribution:
             cs.append(c)
-            if c[1] == 0 and r.language is not None and c[0] > 0:
+            if c[0] == 0 or c[1] is None or c[2] == 0:
                 wrong_contribution.append(c)
 
     cs = sorted(cs, key=lambda c: c[0])
