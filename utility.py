@@ -8,9 +8,6 @@ def log(*args, **kwargs):
     now = time.localtime(int(time.time()))
     formatted = time.strftime(time_format, now)
     print(formatted, *args, **kwargs)
-    filename = 'rank.log'.format(__file__)
-    with open(filename, 'a', encoding='utf-8') as f:
-        print(formatted, *args, file=f, **kwargs)
 
 
 def log_dict(data):
