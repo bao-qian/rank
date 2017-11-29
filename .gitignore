@@ -52,5 +52,5 @@ fabric.properties
 
 *.db
 *.log
-*.secret
+secret.py
 *.pyc
