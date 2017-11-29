@@ -113,3 +113,30 @@ class User:
             }}
             """.format(user, r1, r2)
         return q
+
+    @classmethod
+    def users_for_query(cls):
+        q = User.query_china_user()
+        log('query', q)
+        r = API.get_v4(q)
+        log_dict(r)
+        nodes = r['data']['search']['edges']
+        users = User.users_from_nodes(nodes)
+        return users
+
+    @classmethod
+    def users_for_extra(cls):
+        for e in config.extra_user:
+            q = User.query_user(e)
+            log('query', q)
+            r = API.get_v4(q)
+            log_dict(r)
+            node = r['data']['user']
+            u = User.user_from_node(node)
+            yield u
+
+    @classmethod
+    def all(cls):
+        u2 = cls.users_for_extra()
+        u1 = cls.users_for_query()
+        return list(u2) + list(u1)
