@@ -4,6 +4,7 @@ import config
 from api import API
 from repository import Repository
 from utility import log, log_dict
+import itertools
 
 
 class User:
@@ -139,4 +140,9 @@ class User:
     def all(cls):
         u2 = cls.users_for_extra()
         u1 = cls.users_for_query()
-        return list(u2) + list(u1)
+        us = list(u2) + list(u1)
+        for i, u in enumerate(us):
+            log('user no.{}'.format(i, u.login))
+            u.add_contribution()
+            u.calculate_star()
+        return us
