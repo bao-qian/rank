@@ -2,6 +2,7 @@ from requests import HTTPError
 
 import config
 from api import API
+from contribution import Contribution
 from repository import Repository
 from utility import log, log_dict
 import itertools
@@ -43,37 +44,6 @@ class User:
     @classmethod
     def user_from_node(cls, node):
         return User(node)
-
-    def add_contribution(self):
-        for r in self.repositories:
-            r.validate_code()
-            if r.is_code:
-                log('valid code repo', r.name_with_owner)
-                q = Repository.query_for_contributors(r.name_with_owner)
-                try:
-                    cs = API.get_v3(q)
-                except HTTPError:
-                    cs = []
-                total_commit = 0
-                contributed_commit = 0
-                for c in cs:
-                    login = c['author']['login']
-                    total = c['total']
-                    total_commit += total
-                    if login == self.login:
-                        contributed_commit = total
-                if total_commit != 0:
-                    rate = r.start_count * contributed_commit / total_commit
-                else:
-                    rate = 0
-                self.contribution.append((rate, r.language, contributed_commit, total_commit, r.url))
-
-    def calculate_star(self):
-        for c in self.contribution:
-            if c[0] == 0 or c[1] is None or c[2] == 0:
-                continue
-            else:
-                self.star += c[0]
 
     @staticmethod
     def query_china_user():
@@ -143,6 +113,7 @@ class User:
         us = list(u2) + list(u1)
         for i, u in enumerate(us):
             log('user no.{}'.format(i, u.login))
-            u.add_contribution()
-            u.calculate_star()
+            cs = list(Contribution.all(u.login, u.repositories))
+            u.contribution = sorted(cs, key=lambda c: c.count, reverse=True)
+            u.star = sum([c.count for c in u.contribution])
         return us
