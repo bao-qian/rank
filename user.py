@@ -130,7 +130,7 @@ class User:
         u1 = cls.users_for_query()
         us = list(u2) + list(u1)
         for i, u in enumerate(us):
-            log('user no.{}'.format(i, u.login))
+            log('user no.{} {}'.format(i, u.login))
             cs = list(Contribution.all(u.login, u.repositories))
             u.contribution = sorted(cs, key=lambda c: c.count, reverse=True)
             u.star = sum([c.count for c in u.contribution])

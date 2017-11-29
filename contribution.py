@@ -14,7 +14,6 @@ class Contribution:
         self.contributed_commit = 0
         self.total_commit = 0
         self.rate = 0
-
         repository.validate_code()
         if repository.is_code:
             log('valid code repo', repository.name_with_owner)
@@ -32,9 +31,9 @@ class Contribution:
                 if _login == login:
                     self.contributed_commit = total
 
-        if self.total_commit != 0:
-            self.rate = self.contributed_commit / self.total_commit
-            self.count = repository.start_count * self.rate
+            if self.total_commit != 0:
+                self.rate = self.contributed_commit / self.total_commit
+                self.count = repository.start_count * self.rate
 
     def __repr__(self):
         classname = self.__class__.__name__

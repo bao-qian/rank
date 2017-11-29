@@ -38,8 +38,6 @@ class Repository:
         if self.language is None:
             self.invalid.append((self.name_with_owner, self.language))
         else:
-            if 'cloudwu/coroutine' == self.name_with_owner:
-                print('catch')
             # 必须要选一个语言
             query = '/{}/search?l=c'.format(self.name_with_owner)
             html = API.get_crawler(query)
