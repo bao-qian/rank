@@ -70,10 +70,12 @@ class Repository:
                         log('cannot find c in repo', self.name_with_owner)
 
             if len(files) > 0:
-                self.language = max(files, key=lambda f: f[0])[1]
-                log('validate code <{}> <{}>'.format(self.language, files))
-                if self.language not in config.invalid_language:
+                language = max(files, key=lambda f: f[0])[1]
+                log('validate code <{}> <{}>'.format(language, files))
+                if language not in config.invalid_language:
                     self.is_code = True
+                    if self.language in config.invalid_language:
+                        self.language = language
                 else:
                     self.invalid.append((self.name_with_owner, files))
             else:
