@@ -38,7 +38,7 @@ class Repository:
         if self.language is None:
             self.invalid.append((self.name_with_owner, self.language))
         else:
-            if 'The-Art-Of-Programming-By-July' in self.name_with_owner:
+            if 'cloudwu/coroutine' == self.name_with_owner:
                 print('catch')
             # 必须要选一个语言
             query = '/{}/search?l=c'.format(self.name_with_owner)
@@ -55,17 +55,24 @@ class Repository:
                 else:
                     # 选了一个语言后，该语言在右侧没有文件统计
                     head = q('.codesearch-results h3').text().strip()
-                    text = 'code results'
-                    if text in head:
-                        count = head.split(text, 1)[0].replace(',', '')
+                    text1 = 'code results'
+                    text2 = 'Results'
+                    if text1 in head:
+                        count = head.split(text1, 1)[0].replace(',', '')
                         count = int(count)
                         language = 'C'
                         files.append((count, language))
+                    elif text2 in head:
+                        count = len(q('.code-list-item'))
+                        language = 'C'
+                        files.append((count, language))
+                    else:
+                        log('cannot find c in repo', self.name_with_owner)
 
             if len(files) > 0:
-                primary_language = max(files, key=lambda f: f[0])[1]
-                log('validate code <{}> <{}>'.format(primary_language, files))
-                if primary_language not in config.invalid_language:
+                self.language = max(files, key=lambda f: f[0])[1]
+                log('validate code <{}> <{}>'.format(self.language, files))
+                if self.language not in config.invalid_language:
                     self.is_code = True
                 else:
                     self.invalid.append((self.name_with_owner, files))
