@@ -14,21 +14,7 @@ from api import API
 def main():
     init_db()
 
-    q = User.query_china_user()
-    log('query', q)
-    r = API.get_v4(q)
-    log_dict(r)
-    nodes = r['data']['search']['edges']
-    users = list(User.users_from_nodes(nodes))
-
-    for e in config.extra_user:
-        q = User.query_user(e)
-        log('query', q)
-        r = API.get_v4(q)
-        log_dict(r)
-        node = r['data']['user']
-        u = User.user_from_node(node)
-        users.insert(0, u)
+    users = User.all()
 
     s = set([])
     for u in users:
