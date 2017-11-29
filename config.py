@@ -1,3 +1,6 @@
+user_query = 'location:china'
+user_count = 100
+
 extra_user = [
     'happlebao',
 ]
