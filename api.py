@@ -113,6 +113,10 @@ class API(Model.base):
                     "Chrome/62.0.3202.94 Safari/537.36"
             headers = {'User-Agent': agent}
             r = requests.get(url=url, headers=headers)
-            html = r.text
-            cls._set(query, html)
-            return html
+            if r.status_code == 200:
+                html = r.text
+                cls._set(query, html)
+                return html
+            else:
+                message = 'url {} get error code {}'.format(url, r.status_code)
+                raise HTTPError(message, response=r)
