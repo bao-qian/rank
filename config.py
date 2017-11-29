@@ -1,5 +1,5 @@
 user_query = 'location:china'
-user_count = 100
+user_count = 200
 
 extra_user = [
     'happlebao',
