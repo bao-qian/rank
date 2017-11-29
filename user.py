@@ -1,11 +1,8 @@
-from requests import HTTPError
-
 import config
 from api import API
 from contribution import Contribution
 from repository import Repository
 from utility import log, log_dict
-import itertools
 
 
 class User:
@@ -46,12 +43,18 @@ class User:
         return User(node)
 
     @staticmethod
-    def query_china_user():
+    def query_china_user(first, after):
         r1 = Repository.query_pinned()
         r2 = Repository.query_popular()
         q = """
             {{
-                search(first: {}, query: "{}", type: USER) {{
+                search(first: {},{} query: "{}", type: USER) {{
+                    pageInfo {{
+                      endCursor
+                      hasNextPage
+                      hasPreviousPage
+                      startCursor
+                    }}
                     edges {{
                         node {{
                             ... on User {{
@@ -65,7 +68,7 @@ class User:
                     }}
                 }}
             }}
-            """.format(config.user_count, config.user_query, r1, r2)
+            """.format(first, after, config.user_query, r1, r2)
         return q
 
     @staticmethod
@@ -87,13 +90,28 @@ class User:
 
     @classmethod
     def users_for_query(cls):
-        q = User.query_china_user()
+        # 非 100 整除的不管
+        length = 100
+
+        q = User.query_china_user(length, '')
         log('query', q)
         r = API.get_v4(q)
-        log_dict(r)
-        nodes = r['data']['search']['edges']
-        users = User.users_from_nodes(nodes)
-        return users
+        s = r['data']['search']
+        end_cursor = s['pageInfo']['endCursor']
+        nodes = s['edges']
+        yield from User.users_from_nodes(nodes)
+
+        steps = int(config.user_count / length)
+        for i in range(steps - 1):
+            after = 'after:" {}"'.format(end_cursor)
+            q = User.query_china_user(length, after)
+            log('query', q)
+            r = API.get_v4(q)
+            log('user for query', r)
+            s = r['data']['search']
+            end_cursor = s['pageInfo']['endCursor']
+            nodes = s['edges']
+            yield from User.users_from_nodes(nodes)
 
     @classmethod
     def users_for_extra(cls):
