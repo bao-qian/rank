@@ -28,6 +28,7 @@ def main():
 
     us = sorted(users, key=lambda u: u.star, reverse=True)
     for i, u in enumerate(us):
+        # if len(u.contribution) > 0 and u.login not in u.contribution[0].repository.name_with_owner:
         formatted = 'user star:'
         formatted += f'{i:3} {u.login:15} {int(u.star):5} '
         for c in u.contribution[:3]:

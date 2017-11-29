@@ -6,14 +6,12 @@ extra_user = [
 ]
 
 invalid_language = [
-    'MediaWiki',
     'Graphviz (DOT)',
+    'MediaWiki',
     'Markdown',
     'YAML',
     'HTML',
     'Text',
-    'XML',
     'SVG',
     'TeX',
-    'INI',
 ]
