@@ -1,5 +1,6 @@
 from requests import HTTPError
 
+import config
 from api import API
 from repository import Repository
 from utility import log, log_dict
@@ -79,21 +80,21 @@ class User:
         r2 = Repository.query_popular()
         q = """
             {{
-                search(first: 100, query: "location:china", type: USER) {{
+                search(first: {}, query: "{}", type: USER) {{
                     edges {{
                         node {{
                             ... on User {{
                             login
                             name
                             url
-                            {0}
-                            {1}
+                            {}
+                            {}
                             }}
                         }}
                     }}
                 }}
             }}
-            """.format(r1, r2)
+            """.format(config.user_count, config.user_query, r1, r2)
         return q
 
     @staticmethod
@@ -102,12 +103,12 @@ class User:
         r2 = Repository.query_popular()
         q = """
             {{
-                user(login: "{0}") {{
+                user(login: "{}") {{
                     login
                     name
                     url
-                    {1}
-                    {2}
+                    {}
+                    {}
                 }}
             }}
             """.format(user, r1, r2)
