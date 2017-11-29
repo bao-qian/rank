@@ -7,9 +7,13 @@ extra_user = [
 
 invalid_language = [
     'MediaWiki',
+    'Graphviz (DOT)',
+    'Markdown',
     'YAML',
     'HTML',
-    'Markdown',
     'Text',
     'XML',
+    'SVG',
+    'TeX',
+    'INI',
 ]

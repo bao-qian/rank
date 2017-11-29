@@ -29,10 +29,10 @@ def main():
     us = sorted(users, key=lambda u: u.star, reverse=True)
     for i, u in enumerate(us):
         formatted = 'user star:'
-        formatted += f'<{i}>\t<{u.login}>\t\t\t<{int(u.star)}>\t'
+        formatted += f'{i:3} {u.login:15} {int(u.star):5} '
         for c in u.contribution[:3]:
             r = c.repository
-            formatted += f'\t<{r.name_with_owner}>\t<{r.language}>\t<{int(c.count)}>\t'
+            formatted += f'{r.name_with_owner:40} {r.language:12} {int(c.count):5} '
         log(formatted)
 
 
