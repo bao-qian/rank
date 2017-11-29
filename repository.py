@@ -5,6 +5,7 @@ from pyquery import PyQuery
 
 
 class Repository:
+    invalid = []
     def __init__(self, node):
         self.name = node['name']
         self.name_with_owner = node['nameWithOwner']
@@ -33,24 +34,43 @@ class Repository:
             yield r
 
     def validate_code(self):
-        query = '/{}/search?l=c'.format(self.name_with_owner)
-        html = API.get_crawler(query)
-        q = PyQuery(html)
-        files = []
-        for item in q.items('.filter-item'):
-            parts = item.text().strip().split(' ', 1)
-            if len(parts) == 2:
-                count = int(parts[0].replace(',', ''))
-                language = parts[1]
+        # 有些仓库没有文件或者没有一点所以语言是 none
+        if self.language is None:
+            self.invalid.append((self.name_with_owner, self.language))
+        else:
+            if 'The-Art-Of-Programming-By-July' in self.name_with_owner:
+                print('catch')
+            # 必须要选一个语言
+            query = '/{}/search?l=c'.format(self.name_with_owner)
+            html = API.get_crawler(query)
+            q = PyQuery(html)
+
+            files = []
+            for item in q.items('.filter-item'):
+                parts = item.text().strip().split(' ', 1)
+                if len(parts) == 2:
+                    count = int(parts[0].replace(',', ''))
+                    language = parts[1]
+                    files.append((count, language))
+                else:
+                    # 选了一个语言后，该语言在右侧没有文件统计
+                    head = q('.codesearch-results h3').text().strip()
+                    text = 'code results'
+                    if text in head:
+                        count = head.split(text, 1)[0].replace(',', '')
+                        count = int(count)
+                        language = 'C'
+                        files.append((count, language))
+
+            if len(files) > 0:
+                primary_language = max(files, key=lambda f: f[0])[1]
+                log('validate code <{}> <{}>'.format(primary_language, files))
+                if primary_language not in config.invalid_language:
+                    self.is_code = True
+                else:
+                    self.invalid.append((self.name_with_owner, files))
             else:
-                count = 9999  # max
-                language = parts[0]
-            files.append((count, language))
-        if len(files) > 0:
-            primary_language = max(files, key=lambda f: f[0])[1]
-            log('validate code <{}> <{}>'.format(primary_language, files))
-            if primary_language not in config.invalid_language:
-                self.is_code = True
+                self.invalid.append((self.name_with_owner, self.language))
 
     @staticmethod
     def _query():
