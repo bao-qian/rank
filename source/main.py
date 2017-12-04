@@ -1,13 +1,13 @@
 import os
 
-from contribution import Contribution
 from jinja2 import FileSystemLoader, Environment
+
+import config
+from contribution import Contribution
 from model import init_db
 from repository import Repository
 from user import User
-
-from misc import config
-from source.utility import (
+from utility import (
     log,
 )
 

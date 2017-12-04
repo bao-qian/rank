@@ -4,7 +4,7 @@ from repository import Repository
 from requests import HTTPError
 from utility import log
 
-from source.api import API
+from api import API
 
 
 class Contribution:

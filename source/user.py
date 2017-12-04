@@ -1,9 +1,8 @@
+import config
+from api import API
 from contribution import Contribution
 from repository import Repository
 from utility import log, log_dict
-
-from misc import config
-from source.api import API
 
 
 class User:

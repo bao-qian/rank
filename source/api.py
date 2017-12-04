@@ -2,7 +2,6 @@ import json
 import time
 
 import requests
-from model import Model
 from requests import HTTPError
 from sqlalchemy import (
     Column,
@@ -10,8 +9,9 @@ from sqlalchemy import (
     exists,
 )
 
-from misc import secret
-from source.utility import log
+import secret
+from model import Model
+from utility import log
 
 
 class API(Model.base):
