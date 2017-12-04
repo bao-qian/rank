@@ -1,3 +1,4 @@
+import time
 from requests import HTTPError
 
 from api import API
@@ -6,7 +7,7 @@ from utility import log
 
 
 class Contribution:
-    wrong = []
+    all_invalid = []
 
     def __init__(self, login, repository):
         self.repository = repository
@@ -14,6 +15,9 @@ class Contribution:
         self.contributed_commit = 0
         self.total_commit = 0
         self.rate = 0
+        self.login = login
+        self.valid = False
+
         repository.validate_code()
         if repository.is_code:
             log('valid code repo', repository.name_with_owner)
@@ -24,16 +28,33 @@ class Contribution:
             except HTTPError:
                 cs = []
 
+            # 只统计过去三年的贡献
+            threee_year_ago = int(time.time()) - 365 * 24 * 3600 * 3
             for c in cs:
                 _login = c['author']['login']
-                total = c['total']
-                self.total_commit += total
-                if _login == login:
-                    self.contributed_commit = total
+                weeks = c['weeks']
+                for w in weeks:
+                    week_start = int(w['w'])
+                    if week_start > threee_year_ago and w['c'] > 0:
+                        self.total_commit += w['c']
+                        if _login == login:
+                            self.contributed_commit += w['c']
 
-            if self.total_commit != 0:
+            # 至少贡献了十个 commit
+            if self.login == self.repository.owner and self.contributed_commit > 10:
+                self.valid = True
+            elif self.login != self.repository.owner and self.contributed_commit > 1:
+                self.valid = True
+            else:
+                self.valid = False
+
+            if self.valid:
                 self.rate = self.contributed_commit / self.total_commit
                 self.count = repository.start_count * self.rate
+            else:
+                self.all_invalid.append(
+                    (repository.name_with_owner, self.contributed_commit, self.total_commit)
+                )
 
     def __repr__(self):
         classname = self.__class__.__name__
@@ -45,7 +66,5 @@ class Contribution:
     def all(cls, login, repositories):
         for r in repositories:
             c = Contribution(login, r)
-            if c.contributed_commit == 0 or c.total_commit == 0:
-                cls.wrong.append((r.name_with_owner, c.contributed_commit, c.total_commit))
-            else:
+            if c.valid:
                 yield c
