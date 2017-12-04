@@ -9,9 +9,9 @@ from sqlalchemy import (
     exists,
 )
 
-import secret
-from model import Model
-from utility import log
+from misc import secret
+from source.model import Model
+from source.utility import log
 
 
 class API(Model.base):
