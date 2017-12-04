@@ -14,7 +14,10 @@
     - repo 语言是代码，即 https://api.github.com/repos/xx/xx/languages
     - 且该语言的文件在所有文件中占比超过50%，即 https://github.com/Wox-launcher/Wox/search?l=C%23
     - 需要新写个 网页爬虫 api，专门用来爬 repo search 的数据。v3 v4 都没有这个数据。
+- [x] 贡献考虑当前时间段，比如过去三年的 commit
+- [ ] 贡献考虑当前时间段对应的 star，比如过去三年的 star，而不是总 star
 - [ ] ui 抄 http://ghrc.babits.top/
+
 
 
 
