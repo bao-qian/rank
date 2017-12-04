@@ -2,9 +2,10 @@
 Description=Code Rank
 
 [Service]
+Environment=PYTHONIOENCODING=utf-8
 WorkingDirectory=/var/www/rank
 ExecStart=/usr/bin/python3.6 -m source.main
 TimeoutStartSec=3600
-RestartSec=10
+# RestartSec=10
 Restart=on-failure
 
