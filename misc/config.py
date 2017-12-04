@@ -1,7 +1,12 @@
+import os
+
 user_query = 'location:china'
 user_count = 200
 
-static = 'static'
+root = os.path.dirname(os.path.dirname(__file__))
+static = os.path.join(root, 'static')
+misc = os.path.join(root, 'misc')
+
 extra_user = [
     'happlebao',
 ]

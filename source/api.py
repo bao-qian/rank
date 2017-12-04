@@ -1,18 +1,17 @@
 import json
+import time
 
 import requests
-import time
-from requests import HTTPError
-
-import secret
 from model import Model
+from requests import HTTPError
 from sqlalchemy import (
     Column,
     String,
     exists,
 )
 
-from utility import log
+from misc import secret
+from source.utility import log
 
 
 class API(Model.base):
