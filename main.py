@@ -1,7 +1,9 @@
 import os
+from typing import List
 
 from jinja2 import FileSystemLoader, Environment
 
+import config
 from contribution import Contribution
 from model import init_db
 from repository import Repository
@@ -29,21 +31,17 @@ def log_data(users):
     for i, u in enumerate(users):
         # if len(u.contribution) > 0 and u.login not in u.contribution[0].repository.name_with_owner:
         formatted = 'user star:'
-        formatted += f'{i:3} {u.login:15} {int(u.star):5} '
+        formatted += f'{i:3} {u.login:15} {u.star:5} '
         for c in u.contribution[:3]:
-            if c.count > 0:
+            if c.star > 0:
                 r = c.repository
-                formatted += f'{r.name_with_owner:40} {r.language:12} {int(c.count):5} '
+                formatted += f'{r.name_with_owner:40} {r.language:12} {c.star:5} '
         log(formatted)
 
 
 def configured_environment():
-    # __file__ 就是本文件的名字
-    # 得到用于加载模板的目录
-    path = '{}'.format(os.path.dirname(__file__))
-    # 创建一个加载器, jinja2 会从这个目录中加载模板
+    path = os.path.join(os.path.dirname(__file__), config.static)
     loader = FileSystemLoader(path)
-    # 用加载器创建一个环境, 有了它才能读取模板文件
     return Environment(loader=loader)
 
 
@@ -57,7 +55,12 @@ class Template:
 
 
 def generate_html(users):
-    pass
+    template = 'template_rank.html'
+    html = Template.render(template, users=users)
+    filename = 'rank.html'
+    path = os.path.join(config.static, filename)
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write(html)
 
 
 def main():

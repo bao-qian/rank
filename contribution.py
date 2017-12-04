@@ -11,8 +11,8 @@ class Contribution:
 
     def __init__(self, login, repository):
         self.repository = repository
-        self.count = 0
-        self.contributed_commit = 0
+        self.star = 0
+        self.commit = 0
         self.total_commit = 0
         self.rate = 0
         self.login = login
@@ -38,22 +38,22 @@ class Contribution:
                     if week_start > threee_year_ago and w['c'] > 0:
                         self.total_commit += w['c']
                         if _login == login:
-                            self.contributed_commit += w['c']
+                            self.commit += w['c']
 
             # 至少贡献了十个 commit
-            if self.login == self.repository.owner and self.contributed_commit > 10:
+            if self.login == self.repository.owner and self.commit > 10:
                 self.valid = True
-            elif self.login != self.repository.owner and self.contributed_commit > 1:
+            elif self.login != self.repository.owner and self.commit > 1:
                 self.valid = True
             else:
                 self.valid = False
 
             if self.valid:
-                self.rate = self.contributed_commit / self.total_commit
-                self.count = repository.start_count * self.rate
+                self.rate = self.commit / self.total_commit
+                self.star = int(repository.start_count * self.rate)
             else:
                 self.all_invalid.append(
-                    (repository.name_with_owner, self.contributed_commit, self.total_commit)
+                    (repository.name_with_owner, self.commit, self.total_commit)
                 )
 
     def __repr__(self):

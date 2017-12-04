@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Github Code Contribution Rank China</title>
+    <meta name="viewport" content=" initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .avatar {
+            width: 50px;
+            height: 50px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+<div class="container" id="root">
+    <div>
+        <p class="alert notice">
+            <span>Last updated on </span>
+            <span style="float:right;">
+                <span>♥ made by happlebao</span>
+                <!-- Place this tag where you want the button to render. -->
+                <a class="github-button"
+                   href="https://github.com/happlebao/rank"
+                   data-show-count="true"
+                   aria-label="Star happlebao/rank on GitHub">
+                    Star
+                </a>
+            </span>
+        </p>
+        <table class="table">
+            <thead class="table-head">
+            <tr>
+                <th>Rank</th>
+                <th>Avatar</th>
+                <th>Username</th>
+                <th>Followers</th>
+                <th>Location</th>
+                <th>Contributed Star</th>
+                <th>1st Repo</th>
+                <th>Language</th>
+                <th>Star</th>
+                <th>2nd Repo</th>
+                <th>Language</th>
+                <th>Star</th>
+                <th>3rd Repo</th>
+                <th>Language</th>
+                <th>Star</th>
+            </tr>
+            </thead>
+            <tbody class="table-body">
+            {% for user in users %}
+                <tr>
+                    <td>
+                        <a name="{{ loop.index }}" href="#{{ loop.index }}">{{ loop.index }}</a>
+                    </td>
+                    <td>
+                        <img class="avatar" src="{{ user.avatar_url }}&s=140">
+                    </td>
+                    <td>
+                        <a href="{{ user.url }}" target="_blank">{{ user.login }}</a>
+                    </td>
+                    <td>{{ user.followers_count }}</td>
+                    <td>{{ user.location }}</td>
+                    <td>{{ user.star }}</td>
+                    {% for c in user.contribution[:3] %}
+                        {% if c.star > 0 %}
+                            {% set r = c.repository %}
+                            <td>
+                                <a href="{{ r.url }}" target="_blank">{{ r.name }}</a>
+                            </td>
+                            <td>{{ r.language }}</td>
+                            <td>{{ c.star }}</td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+<!-- Place this tag in your head or just before your close body tag. -->
+<script async defer src="https://buttons.github.io/buttons.js"></script>
+</body>
+</html>
