@@ -2,14 +2,12 @@ import os
 
 from jinja2 import FileSystemLoader, Environment
 
-import config
-from contribution import Contribution
-from model import init_db
-from repository import Repository
-from user import User
-from utility import (
-    log,
-)
+from misc import config
+from source.contribution import Contribution
+from source.model import init_db
+from source.repository import Repository
+from source.user import User
+from source.utility import log
 
 
 def all_data():

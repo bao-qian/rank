@@ -1,8 +1,8 @@
 from pyquery import PyQuery
 
-import config
-from api import API
-from utility import log, log_dict
+from misc import config
+from source.api import API
+from source.utility import log, log_dict
 
 
 class Repository:

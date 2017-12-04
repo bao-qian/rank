@@ -1,10 +1,10 @@
 import time
 
-from repository import Repository
 from requests import HTTPError
-from utility import log
 
-from api import API
+from source.repository import Repository
+from source.utility import log
+from source.api import API
 
 
 class Contribution:
