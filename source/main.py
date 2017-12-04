@@ -1,13 +1,13 @@
 import os
 
-from jinja2 import FileSystemLoader, Environment
-
-import config
 from contribution import Contribution
+from jinja2 import FileSystemLoader, Environment
 from model import init_db
 from repository import Repository
 from user import User
-from utility import (
+
+from misc import config
+from source.utility import (
     log,
 )
 
@@ -39,8 +39,7 @@ def log_data(users):
 
 
 def configured_environment():
-    path = os.path.join(os.path.dirname(__file__), config.static)
-    loader = FileSystemLoader(path)
+    loader = FileSystemLoader(config.static)
     return Environment(loader=loader)
 
 

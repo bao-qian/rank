@@ -1,9 +1,10 @@
 import time
-from requests import HTTPError
 
-from api import API
 from repository import Repository
+from requests import HTTPError
 from utility import log
+
+from source.api import API
 
 
 class Contribution:
