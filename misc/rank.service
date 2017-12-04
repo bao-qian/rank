@@ -1,0 +1,10 @@
+[Unit]
+Description=Code Rank
+
+[Service]
+WorkingDirectory=/var/www/rank
+ExecStart=/usr/bin/python3.6 -m source.main
+TimeoutStartSec=3600
+RestartSec=10
+Restart=on-failure
+
