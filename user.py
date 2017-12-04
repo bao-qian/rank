@@ -145,6 +145,6 @@ class User:
         for i, u in enumerate(us):
             log('user no.{} {}'.format(i, u.login))
             cs = list(Contribution.all(u.login, u.repositories))
-            u.contribution = sorted(cs, key=lambda c: c.count, reverse=True)
-            u.star = sum([c.count for c in u.contribution])
+            u.contribution = sorted(cs, key=lambda c: c.star, reverse=True)
+            u.star = sum([c.star for c in u.contribution])
         return us
