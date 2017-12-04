@@ -19,7 +19,7 @@ class Contribution:
         self.valid = False
 
         repository.validate_code()
-        if repository.is_code:
+        if repository.valid:
             log('valid code repo', repository.name_with_owner)
             q = Repository.query_for_contributors(repository.name_with_owner)
 
