@@ -30,12 +30,12 @@ class API(Model.base):
     def _get(cls, query):
         result = Model.session.query(API).filter(API.graph_query == query).scalar()
         log('get result for query', query)
-        log('get result for query', result)
+        # log('get result for query', result)
         return result
 
     @classmethod
     def _set(cls, query, response):
-        log('add result for query', query)
+        log('set result for query', query)
         c = API(
             graph_query=query,
             response=response,
