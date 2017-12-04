@@ -1,16 +1,10 @@
-import json
-
-import config
 from contribution import Contribution
 from model import init_db
 from repository import Repository
 from user import User
 from utility import (
-    log_dict,
     log,
 )
-
-from api import API
 
 
 def main():

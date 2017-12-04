@@ -10,6 +10,9 @@ class User:
         self.name = node['name']
         self.login = node['login']
         self.url = node['url']
+        self.avatar_url = node['avatarUrl']
+        self.followers_count = node['followers']['totalCount']
+        self.location = node['location']
         r1 = node['pinnedRepositories']['edges']
         r2 = node['repositories']['edges']
 
@@ -61,6 +64,11 @@ class User:
                             login
                             name
                             url
+                            avatarUrl
+                            followers {{
+                                totalCount
+                            }}
+                            location
                             {}
                             {}
                             }}
@@ -81,6 +89,11 @@ class User:
                     login
                     name
                     url
+                    avatarUrl
+                    followers {{
+                        totalCount
+                    }}
+                    location
                     {}
                     {}
                 }}
