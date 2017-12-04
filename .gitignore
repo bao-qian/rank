@@ -52,6 +52,7 @@ fabric.properties
 
 *.db
 *.log
-misc/secret.py
+secret.py
 *.pyc
 .vagrant
+rank.html
