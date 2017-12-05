@@ -2,7 +2,7 @@ from pyquery import PyQuery
 
 from misc import config
 from source.api import API
-from source.utility import log, log_dict
+from source.utility import log
 
 
 class Repository:
@@ -29,10 +29,9 @@ class Repository:
 
     @classmethod
     def repositories_from_nodes(cls, nodes):
-        log('repositories_from_nodes')
-        log_dict(nodes)
         for node in nodes:
             n = node['node']
+            log('repositories_from_nodes <{}>'.format(n['name']))
             r = cls(n)
             yield r
 

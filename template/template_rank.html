@@ -44,8 +44,9 @@
                 <th>2nd Repo</th>
                 <th>Language</th>
                 <th>Star</th>
-                <th>3rd Repo</th>
-                <th>Language</th>
+                <th>1st Language</th>
+                <th>Star</th>
+                <th>2st Language</th>
                 <th>Star</th>
             </tr>
             </thead>
@@ -64,15 +65,17 @@
                     <td>{{ user.followers_count }}</td>
                     <td>{{ user.location }}</td>
                     <td>{{ user.star }}</td>
-                    {% for c in user.contribution[:3] %}
-                        {% if c.star > 0 %}
-                            {% set r = c.repository %}
-                            <td>
-                                <a href="{{ r.url }}" target="_blank">{{ r.name }}</a>
-                            </td>
-                            <td>{{ r.language }}</td>
-                            <td>{{ c.star }}</td>
-                        {% endif %}
+                    {% for c in user.contribution[:2] %}
+                        {% set r = c.repository %}
+                        <td>
+                            <a href="{{ r.url }}" target="_blank">{{ r.name }}</a>
+                        </td>
+                        <td>{{ r.language }}</td>
+                        <td>{{ c.star }}</td>
+                    {% endfor %}
+                    {% for l in user.language[:2] %}
+                        <td>{{ l[0] }}</td>
+                        <td>{{ l[1] }}</td>
                     {% endfor %}
                 </tr>
             {% endfor %}

@@ -2,7 +2,7 @@ from misc import config
 from source.api import API
 from source.contribution import Contribution
 from source.repository import Repository
-from source.utility import log, log_dict
+from source.utility import log
 
 
 class User:
@@ -25,6 +25,7 @@ class User:
         self.pinned_repositories = r1
         self.popular_repositories = r2
         self.contribution = []
+        self.language = {}
         self.star = 0
 
     def __repr__(self):
@@ -36,9 +37,8 @@ class User:
     @classmethod
     def users_from_nodes(cls, nodes):
         for node in nodes:
-            log('users_from_nodes')
-            log_dict(node)
             n = node['node']
+            log('users_from_nodes <{}>'.format(n['name']))
             yield User(n)
 
     @classmethod
@@ -129,8 +129,8 @@ class User:
             q = User.query_user(e)
             log('query', q)
             r = API.get_v4(q)
-            log_dict(r)
             node = r['data']['user']
+            print('users for extra <{}>'.format(node['name']))
             u = User.user_from_node(node)
             yield u
 
@@ -144,4 +144,9 @@ class User:
             cs = list(Contribution.all(u.login, u.repositories))
             u.contribution = sorted(cs, key=lambda c: c.star, reverse=True)
             u.star = sum([c.star for c in u.contribution])
+            ls = {}
+            for c in cs:
+                k = c.repository.language
+                ls[k] = ls.get(k, 0) + c.star
+            u.language = sorted(ls.items(), key=lambda i: i[1], reverse=True)
         return us

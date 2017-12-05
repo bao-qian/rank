@@ -67,5 +67,5 @@ class Contribution:
     def all(cls, login, repositories):
         for r in repositories:
             c = Contribution(login, r)
-            if c.valid:
+            if c.valid and c.star > 0:
                 yield c
