@@ -21,10 +21,19 @@
 
 # 本地运行
 
-`vagrant up`
+下载 vagrant 并运行：
+```bash
+vagrant up
+```
 
-然后打开 `/static/rank.html`
+能看见如下输出，打开其中地址：
+```bash
+==> default: ++ hostname -I
+==> default: ip address: http://192.168.0.122
+```
 
+
+手动安装自行参照 `misc/provision.sh` 中的命令
 
 
 
