@@ -40,7 +40,7 @@ def log_data(users):
 
 
 def configured_environment():
-    loader = FileSystemLoader(config.static)
+    loader = FileSystemLoader(config.template)
     return Environment(loader=loader)
 
 
