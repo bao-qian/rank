@@ -16,6 +16,8 @@
     - 需要新写个 网页爬虫 api，专门用来爬 repo search 的数据。v3 v4 都没有这个数据。
 - [x] 贡献考虑当前时间段，比如过去三年的 commit
 - [ ] 贡献考虑当前时间段对应的 star，比如过去三年的 star，而不是总 star
+    - https://developer.github.com/v3/activity/starring/#alternative-response-with-star-creation-timestamps
+    - https://developer.github.com/v4/reference/interface/starrable/
 - [x] ui 抄 http://ghrc.babits.top/
 - [x] 定时爬虫和自动重启爬虫
 
