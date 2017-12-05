@@ -1,5 +1,6 @@
 import json
 import time
+from typing import Tuple
 
 import requests
 from requests import HTTPError
@@ -109,8 +110,8 @@ class API(Model.base):
     def get_crawler(cls, query, force=False):
         exist, c = cls._get(query)
         if not force and exist:
-            r = json.loads(c.response)
-            return r
+            html = c.response
+            return html
         else:
             base = 'https://github.com'
             url = '{}{}'.format(base, query)
