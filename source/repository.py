@@ -2,7 +2,7 @@ from pyquery import PyQuery
 from requests import HTTPError
 
 from misc import config
-from model import Model
+from source.model import Model
 from source.api import API
 from source.utility import log
 

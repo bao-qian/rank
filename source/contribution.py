@@ -2,7 +2,7 @@ import time
 
 from requests import HTTPError
 
-from model import Model
+from source.model import Model
 from source.repository import Repository
 from source.utility import log
 from source.api import API
