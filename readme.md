@@ -19,6 +19,12 @@
 - [x] ui 抄 http://ghrc.babits.top/
 - [ ] 定时爬虫和自动重启爬虫
 
+# 本地运行
+
+`vagrant up`
+
+然后打开 `/static/rank.html`
+
 
 
 
