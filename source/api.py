@@ -9,8 +9,10 @@ from sqlalchemy import (
     Integer,
 )
 
-import config
-from misc import secret
+from misc import (
+    secret,
+    config,
+)
 from source.model import Model
 from source.utility import log
 
