@@ -9,6 +9,7 @@
 - [x] 贡献率等于 commit 在整个 repo 中占的比重
     - https://github.com/Wox-launcher/Wox/graphs/contributors
     - https://developer.github.com/v3/repos/statistics/#get-contributors-list-with-additions-deletions-and-commit-counts
+    - v4 没有这个 api
 - [x] 贡献数=repo 星星 * 贡献率
 - [x] 移除 markdown 工程师。
     - repo 语言是代码，即 https://api.github.com/repos/xx/xx/languages
