@@ -72,11 +72,26 @@
                         </td>
                         <td>{{ r.language }}</td>
                         <td>{{ c.star }}</td>
+                    {% else %}
                     {% endfor %}
+                    {% if user.contribution|length < 2 %}
+                        {% for c in range(user.contribution|length) %}
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        {% endfor %}
+                    {% endif %}
                     {% for l in user.language[:2] %}
                         <td>{{ l[0] }}</td>
                         <td>{{ l[1] }}</td>
                     {% endfor %}
+                    {% if user.language|length < 2 %}
+                        {% for c in range(user.language|length) %}
+                            <td></td>
+                            <td></td>
+                        {% endfor %}
+                    {% endif %}
+
                 </tr>
             {% endfor %}
             </tbody>
