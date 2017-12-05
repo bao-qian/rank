@@ -56,3 +56,4 @@ secret.py
 *.pyc
 .vagrant
 rank.html
+index.html

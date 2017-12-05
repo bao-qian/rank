@@ -10,8 +10,8 @@ sudo apt-get update
 sudo apt-get install -y python3.6 python3-pip nginx
 sudo -H python3.6 -m pip install sqlalchemy pyquery
 
-sudo ln -f -s /var/www/rank/misc/systemd.service /etc/systemd/system/rank.service
-sudo ln -f -s /var/www/rank/misc/systemd.timer /etc/systemd/system/rank.timer
+sudo ln -f -s /var/www/rank/misc/rank.service /etc/systemd/system/rank.service
+sudo ln -f -s /var/www/rank/misc/rank.timer /etc/systemd/system/rank.timer
 sudo systemctl daemon-reload
 sudo systemctl restart rank.service
 sudo systemctl restart rank.timer
@@ -19,3 +19,5 @@ sudo systemctl restart rank.timer
 rm -f /etc/nginx/sites-enabled/*
 sudo ln -f -s /var/www/rank/misc/nginx.conf /etc/nginx/sites-enabled/rank.conf
 sudo systemctl restart nginx
+
+echo ip address: http://`hostname -I | cut -d' ' -f2`
