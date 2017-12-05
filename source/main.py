@@ -58,7 +58,7 @@ def generate_html(users):
     now = datetime.datetime.utcnow()
     utc_string = '{} UTC'.format(str(now))
     html = Template.render(template, updated=utc_string, users=users)
-    filename = 'rank.html'
+    filename = 'index.html'
     path = os.path.join(config.static, filename)
     with open(path, 'w', encoding='utf-8') as f:
         f.write(html)
