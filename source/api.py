@@ -14,11 +14,12 @@ from misc import (
     secret,
     config,
 )
+from model import Model
 from source.database import Database
 from source.utility import log
 
 
-class API(Database.base):
+class API(Model, Database.base):
     __tablename__ = 'api'
     query = Column(String, primary_key=True)
     response = Column(String)

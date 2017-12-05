@@ -2,11 +2,12 @@ from pyquery import PyQuery
 from requests import HTTPError
 
 from misc import config
+from model import Model
 from source.api import API
 from source.utility import log
 
 
-class Repository:
+class Repository(Model):
     all_invalid = []
 
     def __init__(self, node):
@@ -21,12 +22,6 @@ class Repository:
         self.url = node['url']
         self.start_count = node['stargazers']['totalCount']
         self.valid = False
-
-    def __repr__(self):
-        classname = self.__class__.__name__
-        properties = ['{}: ({})'.format(k, v) for k, v in self.__dict__.items()]
-        s = '\n'.join(properties)
-        return '< {}\n{} \n>\n'.format(classname, s)
 
     @classmethod
     def repositories_from_nodes(cls, nodes):

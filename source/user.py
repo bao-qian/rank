@@ -30,12 +30,6 @@ class User:
         self.language = {}
         self.star = 0
 
-    def __repr__(self):
-        classname = self.__class__.__name__
-        properties = ['{}: ({})'.format(k, v) for k, v in self.__dict__.items()]
-        s = '\n'.join(properties)
-        return '< {}\n{} \n>\n'.format(classname, s)
-
     @classmethod
     def users_from_nodes(cls, nodes):
         for node in nodes:
