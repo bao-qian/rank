@@ -12,7 +12,3 @@ TimeoutStartSec=infinity
 RestartSec=10
 # auto restart due to unknown exception e.g. network failure
 Restart=on-failure
-
-[Install]
-# auto start after os boot
-WantedBy=multi-user.target
