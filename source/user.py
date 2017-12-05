@@ -123,10 +123,10 @@ class User:
                 except HTTPError:
                     yield from []
                 else:
-                    log('user for query', r)
                     s = r['data']['search']
                     end_cursor = s['pageInfo']['endCursor']
                     nodes = s['edges']
+                    log('user for query', len(nodes))
                     yield from User.users_from_nodes(nodes)
 
     @classmethod

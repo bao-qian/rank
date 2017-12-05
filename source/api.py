@@ -1,6 +1,5 @@
 import json
 import time
-from typing import Tuple
 
 import requests
 from requests import HTTPError
@@ -14,12 +13,11 @@ from misc import (
     secret,
     config,
 )
-from model import Model
 from source.database import Database
 from source.utility import log
 
 
-class API(Model, Database.base):
+class API(Database.base):
     __tablename__ = 'api'
     query = Column(String, primary_key=True)
     response = Column(String)
