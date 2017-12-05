@@ -1,3 +1,5 @@
+from requests import HTTPError
+
 from misc import config
 from source.api import API
 from source.contribution import Contribution
@@ -105,34 +107,48 @@ class User:
     def users_for_query(cls):
         q = User.query_china_user(config.count_per_request, '')
         log('query', q)
-        r = API.get_v4(q)
-        s = r['data']['search']
-        end_cursor = s['pageInfo']['endCursor']
-        nodes = s['edges']
-        yield from User.users_from_nodes(nodes)
 
-        steps = config.user_count // config.count_per_request
-        for i in range(steps - 1):
-            after = 'after:" {}"'.format(end_cursor)
-            q = User.query_china_user(config.count_per_request, after)
-            log('query', q)
+        try:
             r = API.get_v4(q)
-            log('user for query', r)
+        except HTTPError:
+            yield from []
+        else:
             s = r['data']['search']
             end_cursor = s['pageInfo']['endCursor']
             nodes = s['edges']
             yield from User.users_from_nodes(nodes)
+
+            steps = config.user_count // config.count_per_request
+            for i in range(steps - 1):
+                after = 'after:" {}"'.format(end_cursor)
+                q = User.query_china_user(config.count_per_request, after)
+                log('query', q)
+
+                try:
+                    r = API.get_v4(q)
+                except HTTPError:
+                    yield from []
+                else:
+                    log('user for query', r)
+                    s = r['data']['search']
+                    end_cursor = s['pageInfo']['endCursor']
+                    nodes = s['edges']
+                    yield from User.users_from_nodes(nodes)
 
     @classmethod
     def users_for_extra(cls):
         for e in config.extra_user:
             q = User.query_user(e)
             log('query', q)
-            r = API.get_v4(q)
-            node = r['data']['user']
-            print('users for extra <{}>'.format(node['name']))
-            u = User.user_from_node(node)
-            yield u
+            try:
+                r = API.get_v4(q)
+            except HTTPError:
+                yield from []
+            else:
+                node = r['data']['user']
+                print('users for extra <{}>'.format(node['name']))
+                u = User.user_from_node(node)
+                yield u
 
     @classmethod
     def all(cls):
