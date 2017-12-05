@@ -23,6 +23,9 @@
 - [ ] 贡献考虑当前时间段对应的 star，比如过去三年的 star，而不是总 star
     - https://developer.github.com/v3/activity/starring/#alternative-response-with-star-creation-timestamps
     - https://developer.github.com/v4/reference/interface/starrable/
+- [ ] 语言排行榜，并在总榜的语言单元格上加上链接
+- [ ] 分页
+
 # 本地运行
 
 下载 vagrant 并运行：
