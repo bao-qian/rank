@@ -3,6 +3,7 @@ import os
 user_query = 'location:china'
 user_count = 10
 count_per_request = 5
+cache_time = 10
 
 root = os.path.dirname(os.path.dirname(__file__))
 static = os.path.join(root, 'static')
