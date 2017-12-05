@@ -1,7 +1,8 @@
 import os
 
 user_query = 'location:china'
-user_count = 200
+user_count = 20
+count_per_request = 10
 
 root = os.path.dirname(os.path.dirname(__file__))
 static = os.path.join(root, 'static')

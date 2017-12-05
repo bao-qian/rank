@@ -104,7 +104,7 @@ class User:
     @classmethod
     def users_for_query(cls):
         # 非 100 整除的不管
-        length = 100
+        length = config.count_per_request
 
         q = User.query_china_user(length, '')
         log('query', q)

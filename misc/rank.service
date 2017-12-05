@@ -5,7 +5,7 @@ Description=Code Rank
 Environment=PYTHONIOENCODING=utf-8
 WorkingDirectory=/var/www/rank
 ExecStart=/usr/bin/python3.6 -m source.main
-TimeoutStartSec=3600
-# RestartSec=10
+TimeoutStartSec=infinity
+RestartSec=10
 Restart=on-failure
 
