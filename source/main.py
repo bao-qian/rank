@@ -1,3 +1,4 @@
+import datetime
 import os
 
 from jinja2 import FileSystemLoader, Environment
@@ -35,6 +36,8 @@ def log_data(users):
                 formatted += f'{r.name_with_owner:40} {r.language:12} {c.star:5} '
         log(formatted)
 
+    log('finish log data to stdout')
+
 
 def configured_environment():
     loader = FileSystemLoader(config.static)
@@ -52,11 +55,14 @@ class Template:
 
 def generate_html(users):
     template = 'template_rank.html'
-    html = Template.render(template, users=users)
+    now = datetime.datetime.utcnow()
+    utc_string = '{} UTC'.format(str(now))
+    html = Template.render(template, updated=utc_string, users=users)
     filename = 'rank.html'
     path = os.path.join(config.static, filename)
     with open(path, 'w', encoding='utf-8') as f:
         f.write(html)
+    log('finish generate html, length {}'.format(len(html)))
 
 
 def main():

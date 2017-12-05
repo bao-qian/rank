@@ -2,4 +2,9 @@
 Description=Code Rank Timer
 
 [Timer]
-OnCalendar=*:0/1
+# auto run crawler service
+OnUnitInactiveSec=5seconds
+
+[Install]
+# auto start after os boot
+WantedBy=multi-user.target

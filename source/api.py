@@ -23,14 +23,13 @@ class API(Model.base):
     def _exist(cls, query):
         statement = exists().where(API.graph_query == query)
         r = Model.session.query(statement).scalar()
-        log('cache exist', r, query)
+        log('cache exist', query)
         return r
 
     @classmethod
     def _get(cls, query):
         result = Model.session.query(API).filter(API.graph_query == query).scalar()
         log('get result for query', query)
-        # log('get result for query', result)
         return result
 
     @classmethod
