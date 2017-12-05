@@ -6,9 +6,10 @@ from requests import HTTPError
 from sqlalchemy import (
     Column,
     String,
-    exists,
+    Integer,
 )
 
+import config
 from misc import secret
 from source.model import Model
 from source.utility import log
@@ -16,36 +17,42 @@ from source.utility import log
 
 class API(Model.base):
     __tablename__ = 'api'
-    graph_query = Column(String, primary_key=True)
+    query = Column(String, primary_key=True)
     response = Column(String)
-
-    @classmethod
-    def _exist(cls, query):
-        statement = exists().where(API.graph_query == query)
-        r = Model.session.query(statement).scalar()
-        log('cache exist', query)
-        return r
+    unixtime = Column(Integer)
 
     @classmethod
     def _get(cls, query):
-        result = Model.session.query(API).filter(API.graph_query == query).scalar()
         log('get result for query', query)
-        return result
+        m = Model.session.query(API).filter(API.query == query).scalar()
+        if m is not None:
+            now = int(time.time())
+            t = now - m.unixtime
+            if t < config.cache_time:
+                return True, m
+            else:
+                log('query cache not valid')
+                return False, None
+        else:
+            log('query not exist')
+            return False, None
 
     @classmethod
     def _set(cls, query, response):
         log('set result for query', query)
+        now = int(time.time())
         c = API(
-            graph_query=query,
+            query=query,
             response=response,
+            unixtime=now,
         )
         Model.session.merge(c)
         Model.session.commit()
 
     @classmethod
     def get_v4(cls, query, force=False):
-        if not force and cls._exist(query):
-            c = cls._get(query)
+        exist, c = cls._get(query)
+        if not force and exist:
             r = json.loads(c.response)
             return r
         else:
@@ -65,8 +72,8 @@ class API(Model.base):
 
     @classmethod
     def get_v3(cls, query, force=False):
-        if not force and cls._exist(query):
-            c = cls._get(query)
+        exist, c = cls._get(query)
+        if not force and exist:
             r = json.loads(c.response)
             return r
         else:
@@ -98,10 +105,10 @@ class API(Model.base):
 
     @classmethod
     def get_crawler(cls, query, force=False):
-        if not force and cls._exist(query):
-            c = cls._get(query)
-            html = c.response
-            return html
+        exist, c = cls._get(query)
+        if not force and exist:
+            r = json.loads(c.response)
+            return r
         else:
             base = 'https://github.com'
             url = '{}{}'.format(base, query)
