@@ -15,6 +15,7 @@ extra_user = [
 ]
 
 invalid_language = [
+    'Jupyter Notebook',
     'Graphviz (DOT)',
     'MediaWiki',
     'Markdown',
