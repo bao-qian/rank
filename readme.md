@@ -32,8 +32,19 @@ vagrant up
 ==> default: ip address: http://192.168.0.122
 ```
 
-
 手动安装自行参照 `misc/provision.sh` 中的命令
+
+# 参数
+
+本地开发自行调整
+1. `config.py` 中的
+    - `user_count` 抓多少个用户的信息
+    - `count_per_request` 抓所有用户信息的时候每次请求多少条数据
+    - `cache_time` 缓存多久失效
+2. `rank.timer` 中的
+    - `OnUnitInactiveSec`  多久程序运行一次
+
+
 
 
 
