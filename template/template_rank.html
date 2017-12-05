@@ -75,7 +75,7 @@
                     {% else %}
                     {% endfor %}
                     {% if user.contribution|length < 2 %}
-                        {% for c in range(user.contribution|length) %}
+                        {% for c in range(2 - user.contribution|length) %}
                             <td></td>
                             <td></td>
                             <td></td>
@@ -86,7 +86,7 @@
                         <td>{{ l[1] }}</td>
                     {% endfor %}
                     {% if user.language|length < 2 %}
-                        {% for c in range(user.language|length) %}
+                        {% for c in range(2 - user.language|length) %}
                             <td></td>
                             <td></td>
                         {% endfor %}
