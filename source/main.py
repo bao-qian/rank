@@ -5,7 +5,7 @@ from jinja2 import FileSystemLoader, Environment
 
 from misc import config
 from source.contribution import Contribution
-from source.model import init_db
+from source.database import init_db
 from source.repository import Repository
 from source.user import User
 from source.utility import log
