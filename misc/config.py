@@ -7,6 +7,7 @@ count_per_request = 5
 root = os.path.dirname(os.path.dirname(__file__))
 static = os.path.join(root, 'static')
 misc = os.path.join(root, 'misc')
+template = os.path.join(root, 'template')
 
 extra_user = [
     'happlebao',
