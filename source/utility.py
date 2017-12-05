@@ -10,5 +10,9 @@ def log(*args, **kwargs):
     print(formatted, *args, **kwargs)
 
 
+def log_error(*args, **kwargs):
+    log('Error', *args, **kwargs)
+
+
 def log_dict(data):
     print(json.dumps(data, indent=4))

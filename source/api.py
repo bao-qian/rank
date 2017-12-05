@@ -70,7 +70,7 @@ class API(Model.base):
                 cls._set(query, r.text)
                 return j
             else:
-                message = 'url {} get error code {}'.format(url, r.status_code)
+                message = 'error code for url <{}> <{}>'.format(url, r.status_code)
                 raise HTTPError(message, response=r)
 
     @classmethod
@@ -103,7 +103,7 @@ class API(Model.base):
                 # 保险起见多睡 5 s
                 time.sleep(now - rate_limit + 5)
             else:
-                message = 'url {} get error code {}'.format(url, r.status_code)
+                message = 'error code for url <{}> <{}>'.format(url, r.status_code)
                 raise HTTPError(message, response=r)
 
     @classmethod
@@ -126,5 +126,5 @@ class API(Model.base):
                 cls._set(query, html)
                 return html
             else:
-                message = 'url {} get error code {}'.format(url, r.status_code)
+                message = 'error code for url <{}> <{}>'.format(url, r.status_code)
                 raise HTTPError(message, response=r)

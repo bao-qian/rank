@@ -1,4 +1,5 @@
 from pyquery import PyQuery
+from requests import HTTPError
 
 from misc import config
 from source.api import API
@@ -43,56 +44,60 @@ class Repository:
         else:
             # 必须要选一个语言
             query = '/{}/search?l=c'.format(self.name_with_owner)
-            html = API.get_crawler(query)
-            q = PyQuery(html)
-
-            files = []
-            for item in q.items('.filter-item'):
-                parts = item.text().strip().split(' ', 1)
-                if len(parts) == 2:
-                    count = int(parts[0].replace(',', ''))
-                    language = parts[1]
-                    files.append((count, language))
-                else:
-                    # 选了一个语言后，该语言在右侧没有文件统计
-                    head = q('.codesearch-results h3').text().strip()
-                    text1 = 'code results'
-                    text2 = 'Results'
-                    if text1 in head:
-                        count = head.split(text1, 1)[0].replace(',', '')
-                        count = int(count)
-                        language = 'C'
-                        files.append((count, language))
-                    elif text2 in head:
-                        count = len(q('.code-list-item'))
-                        language = 'C'
+            try:
+                html = API.get_crawler(query)
+            except HTTPError:
+                self.valid = False
+                self.all_invalid.append((self.name_with_owner, self.language))
+            else:
+                q = PyQuery(html)
+                files = []
+                for item in q.items('.filter-item'):
+                    parts = item.text().strip().split(' ', 1)
+                    if len(parts) == 2:
+                        count = int(parts[0].replace(',', ''))
+                        language = parts[1]
                         files.append((count, language))
                     else:
-                        log('cannot find c in repo', self.name_with_owner)
+                        # 选了一个语言后，该语言在右侧没有文件统计
+                        head = q('.codesearch-results h3').text().strip()
+                        text1 = 'code results'
+                        text2 = 'Results'
+                        if text1 in head:
+                            count = head.split(text1, 1)[0].replace(',', '')
+                            count = int(count)
+                            language = 'C'
+                            files.append((count, language))
+                        elif text2 in head:
+                            count = len(q('.code-list-item'))
+                            language = 'C'
+                            files.append((count, language))
+                        else:
+                            log('cannot find c in repo', self.name_with_owner)
 
-            if len(files) > 1:
-                files = sorted(files, key=lambda file: file[0], reverse=True)
-                f1 = files[0]
-                f2 = files[1]
-                log('validate code <{}> <{}>'.format(files, files))
-                if f1[1] in config.invalid_language:
-                    self.valid = False
-                    # 如果文件最多的两个语言相等，则他们都不能是文本
-                elif f1[0] == f2[0] and f2[1] in config.invalid_language:
-                    self.valid = False
-                else:
-                    self.valid = True
-            else:
-                self.valid = False
-
-            # 主要语言文件不少于三个
-            for f in files:
-                if f[1] == self.language:
-                    if f[0] < 3:
+                if len(files) > 1:
+                    files = sorted(files, key=lambda file: file[0], reverse=True)
+                    f1 = files[0]
+                    f2 = files[1]
+                    log('validate code <{}> <{}>'.format(files, files))
+                    if f1[1] in config.invalid_language:
                         self.valid = False
+                        # 如果文件最多的两个语言相等，则他们都不能是文本
+                    elif f1[0] == f2[0] and f2[1] in config.invalid_language:
+                        self.valid = False
+                    else:
+                        self.valid = True
+                else:
+                    self.valid = False
 
-            if not self.valid:
-                self.all_invalid.append((self.name_with_owner, files))
+                # 主要语言文件不少于三个
+                for f in files:
+                    if f[1] == self.language:
+                        if f[0] < 3:
+                            self.valid = False
+
+                if not self.valid:
+                    self.all_invalid.append((self.name_with_owner, files))
 
     @staticmethod
     def _query():
