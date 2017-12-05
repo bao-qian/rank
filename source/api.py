@@ -14,11 +14,11 @@ from misc import (
     secret,
     config,
 )
-from source.model import Model
+from source.database import Database
 from source.utility import log
 
 
-class API(Model.base):
+class API(Database.base):
     __tablename__ = 'api'
     query = Column(String, primary_key=True)
     response = Column(String)
@@ -27,7 +27,7 @@ class API(Model.base):
     @classmethod
     def _get(cls, query):
         log('get result for query', query)
-        m = Model.session.query(API).filter(API.query == query).scalar()
+        m = Database.session.query(API).filter(API.query == query).scalar()
         if m is not None:
             now = int(time.time())
             t = now - m.unixtime
@@ -49,8 +49,8 @@ class API(Model.base):
             response=response,
             unixtime=now,
         )
-        Model.session.merge(c)
-        Model.session.commit()
+        Database.session.merge(c)
+        Database.session.commit()
 
     @classmethod
     def _get_v4(cls, query):
