@@ -103,10 +103,7 @@ class User:
 
     @classmethod
     def users_for_query(cls):
-        # 非 100 整除的不管
-        length = config.count_per_request
-
-        q = User.query_china_user(length, '')
+        q = User.query_china_user(config.count_per_request, '')
         log('query', q)
         r = API.get_v4(q)
         s = r['data']['search']
@@ -114,10 +111,10 @@ class User:
         nodes = s['edges']
         yield from User.users_from_nodes(nodes)
 
-        steps = int(config.user_count / length)
+        steps = config.user_count // config.count_per_request
         for i in range(steps - 1):
             after = 'after:" {}"'.format(end_cursor)
-            q = User.query_china_user(length, after)
+            q = User.query_china_user(config.count_per_request, after)
             log('query', q)
             r = API.get_v4(q)
             log('user for query', r)

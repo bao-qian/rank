@@ -2,10 +2,17 @@
 Description=Code Rank
 
 [Service]
+# fix python 3 unicode
 Environment=PYTHONIOENCODING=utf-8
 WorkingDirectory=/var/www/rank
 ExecStart=/usr/bin/python3.6 -m source.main
+# don't kill crawler due to timeout
 TimeoutStartSec=infinity
+# wait 10 seconds before restart
 RestartSec=10
+# auto restart due to unknown exception e.g. network failure
 Restart=on-failure
 
+[Install]
+# auto start after os boot
+WantedBy=multi-user.target
