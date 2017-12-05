@@ -2,12 +2,13 @@ import time
 
 from requests import HTTPError
 
+from model import Model
 from source.repository import Repository
 from source.utility import log
 from source.api import API
 
 
-class Contribution:
+class Contribution(Model):
     all_invalid = []
 
     def __init__(self, login, repository):
@@ -56,12 +57,6 @@ class Contribution:
                 self.all_invalid.append(
                     (repository.name_with_owner, self.commit, self.total_commit)
                 )
-
-    def __repr__(self):
-        classname = self.__class__.__name__
-        properties = ['{}: ({})'.format(k, v) for k, v in self.__dict__.items()]
-        s = '\n'.join(properties)
-        return '< {}\n{} \n>\n'.format(classname, s)
 
     @classmethod
     def all(cls, login, repositories):
