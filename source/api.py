@@ -32,13 +32,13 @@ class API(Model.base):
             now = int(time.time())
             t = now - m.unixtime
             if t < config.cache_time:
-                return True, m
+                return m
             else:
                 log('query cache not valid')
-                return False, None
+                raise ValueError
         else:
             log('query not exist')
-            return False, None
+            raise ValueError
 
     @classmethod
     def _set(cls, query, response):
@@ -53,78 +53,102 @@ class API(Model.base):
         Model.session.commit()
 
     @classmethod
-    def get_v4(cls, query, force=False):
-        exist, c = cls._get(query)
-        if not force and exist:
-            r = json.loads(c.response)
-            return r
+    def _get_v4(cls, query):
+        url = 'https://api.github.com/graphql'
+        json_query = {
+            'query': query
+        }
+        headers = {'Authorization': 'bearer {}'.format(secret.token)}
+        r = requests.post(url=url, json=json_query, headers=headers)
+        if r.status_code == 200:
+            j = r.json()
+            cls._set(query, r.text)
+            return j
         else:
-            url = 'https://api.github.com/graphql'
-            json_query = {
-                'query': query
-            }
-            headers = {'Authorization': 'bearer {}'.format(secret.token)}
-            r = requests.post(url=url, json=json_query, headers=headers)
-            if r.status_code == 200:
-                j = r.json()
-                cls._set(query, r.text)
-                return j
+            message = 'error code for url <{}> <{}>'.format(url, r.status_code)
+            raise HTTPError(message, response=r)
+
+    @classmethod
+    def get_v4(cls, query, force=False):
+        if force:
+            return cls._get_v4(query)
+        else:
+            try:
+                c = cls._get(query)
+            except ValueError:
+                return cls._get_v4(query)
             else:
-                message = 'error code for url <{}> <{}>'.format(url, r.status_code)
-                raise HTTPError(message, response=r)
+                r = json.loads(c.response)
+                return r
+
+    @classmethod
+    def _get_v3(cls, query):
+        base = 'https://api.github.com'
+        url = '{}{}'.format(base, query)
+        log('get v3 url', url)
+        headers = {'Authorization': 'bearer {}'.format(secret.token)}
+        r = requests.get(url=url, headers=headers)
+
+        rate_limit = int(r.headers['X-RateLimit-Limit'])
+        rate_reset = int(r.headers['X-RateLimit-Reset'])
+        rate_remaing = int(r.headers['X-RateLimit-Remaining'])
+        log('rate limit <{}> rate remaing <{}>'.format(rate_limit, rate_remaing))
+        now = int(time.time())
+        log('rate will reset in <{}>'.format(now - rate_reset))
+
+        if r.status_code == 200:
+            log('get v3 r', r)
+            j = r.json()
+            cls._set(query, r.text)
+            return j
+        elif rate_remaing == 0:
+            log('no rate remaing')
+            # 保险起见多睡 5 s
+            time.sleep(now - rate_limit + 5)
+        else:
+            message = 'error code for url <{}> <{}>'.format(url, r.status_code)
+            raise HTTPError(message, response=r)
 
     @classmethod
     def get_v3(cls, query, force=False):
-        exist, c = cls._get(query)
-        if not force and exist:
-            r = json.loads(c.response)
-            return r
+        if force:
+            return cls._get_v3(query)
         else:
-            base = 'https://api.github.com'
-            url = '{}{}'.format(base, query)
-            log('get v3 url', url)
-            headers = {'Authorization': 'bearer {}'.format(secret.token)}
-            r = requests.get(url=url, headers=headers)
-
-            rate_limit = int(r.headers['X-RateLimit-Limit'])
-            rate_reset = int(r.headers['X-RateLimit-Reset'])
-            rate_remaing = int(r.headers['X-RateLimit-Remaining'])
-            log('rate limit <{}> rate remaing <{}>'.format(rate_limit, rate_remaing))
-            now = int(time.time())
-            log('rate will reset in <{}>'.format(now - rate_reset))
-
-            if r.status_code == 200:
-                log('get v3 r', r)
-                j = r.json()
-                cls._set(query, r.text)
-                return j
-            elif rate_remaing == 0:
-                log('no rate remaing')
-                # 保险起见多睡 5 s
-                time.sleep(now - rate_limit + 5)
+            try:
+                c = cls._get(query)
+            except ValueError:
+                return cls._get_v3(query)
             else:
-                message = 'error code for url <{}> <{}>'.format(url, r.status_code)
-                raise HTTPError(message, response=r)
+                r = json.loads(c.response)
+                return r
+
+    @classmethod
+    def _get_crawler(cls, query):
+        base = 'https://github.com'
+        url = '{}{}'.format(base, query)
+        log('get crawler url', url)
+        agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " \
+                "AppleWebKit/537.36 (KHTML, like Gecko) " \
+                "Chrome/62.0.3202.94 Safari/537.36"
+        headers = {'User-Agent': agent}
+        r = requests.get(url=url, headers=headers)
+        if r.status_code == 200:
+            html = r.text
+            cls._set(query, html)
+            return html
+        else:
+            message = 'error code for url <{}> <{}>'.format(url, r.status_code)
+            raise HTTPError(message, response=r)
 
     @classmethod
     def get_crawler(cls, query, force=False):
-        exist, c = cls._get(query)
-        if not force and exist:
-            html = c.response
-            return html
+        if force:
+            return cls._get_crawler(query)
         else:
-            base = 'https://github.com'
-            url = '{}{}'.format(base, query)
-            log('get crawler url', url)
-            agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " \
-                    "AppleWebKit/537.36 (KHTML, like Gecko) " \
-                    "Chrome/62.0.3202.94 Safari/537.36"
-            headers = {'User-Agent': agent}
-            r = requests.get(url=url, headers=headers)
-            if r.status_code == 200:
-                html = r.text
-                cls._set(query, html)
-                return html
+            try:
+                c = cls._get(query)
+            except ValueError:
+                return cls._get_crawler(query)
             else:
-                message = 'error code for url <{}> <{}>'.format(url, r.status_code)
-                raise HTTPError(message, response=r)
+                html = c.response
+                return html
