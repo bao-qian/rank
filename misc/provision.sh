@@ -20,4 +20,5 @@ rm -f /etc/nginx/sites-enabled/*
 sudo ln -f -s /var/www/rank/misc/nginx.conf /etc/nginx/sites-enabled/rank.conf
 sudo systemctl restart nginx
 
-echo ip address: http://`hostname -I | cut -d' ' -f2`
+echo 'full url:'
+hostname -I | sed -e 's/ /\n/g' | sed -e 's/^/http:\/\//g'
