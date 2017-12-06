@@ -111,18 +111,16 @@ class API(Database.base):
                 parameter_string += f'{k}: {v} '
 
         q = f"""
-            {{
-                {keyword}({parameter_string}) {{
-                    pageInfo {{
-                      endCursor
-                      hasNextPage
-                      hasPreviousPage
-                      startCursor
-                    }}
-                    edges {{
-                        node {{
-                            {node}
-                        }}
+            {keyword}({parameter_string}) {{
+                pageInfo {{
+                  endCursor
+                  hasNextPage
+                  hasPreviousPage
+                  startCursor
+                }}
+                edges {{
+                    node {{
+                        {node}
                     }}
                 }}
             }}
