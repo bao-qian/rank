@@ -124,10 +124,13 @@ class User:
                     yield from []
                 else:
                     s = r['data']['search']
-                    end_cursor = s['pageInfo']['endCursor']
                     nodes = s['edges']
                     log('user for query', len(nodes))
                     yield from User.users_from_nodes(nodes)
+                    end_cursor = s['pageInfo']['endCursor']
+                    has_next_page = s['pageInfo']['hasNextPage']
+                    if end_cursor is None or not has_next_page:
+                        break
 
     @classmethod
     def users_for_queries(cls):
