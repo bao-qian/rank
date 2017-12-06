@@ -11,7 +11,10 @@ misc = os.path.join(root, 'misc')
 template = os.path.join(root, 'template')
 
 extra_user = [
-    'happlebao',
+    'guaxiao',
+    'skywind3000',
+    'vczh',
+    'JeffreyZhao',
 ]
 
 invalid_language = [
