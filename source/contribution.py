@@ -33,14 +33,18 @@ class Contribution(Model):
             # 只统计过去三年的贡献
             threee_year_ago = int(time.time()) - 365 * 24 * 3600 * 3
             for c in cs:
-                _login = c['author']['login']
-                weeks = c['weeks']
-                for w in weeks:
-                    week_start = int(w['w'])
-                    if week_start > threee_year_ago and w['c'] > 0:
-                        self.total_commit += w['c']
-                        if _login == login:
-                            self.commit += w['c']
+                author = c['author']
+                # https://api.github.com/repos/iview/iview/stats/contributors
+                # author may be null
+                if author is not None:
+                    _login = c['author']['login']
+                    weeks = c['weeks']
+                    for w in weeks:
+                        week_start = int(w['w'])
+                        if week_start > threee_year_ago and w['c'] > 0:
+                            self.total_commit += w['c']
+                            if _login == login:
+                                self.commit += w['c']
 
             # 至少贡献了十个 commit
             if self.login == self.repository.owner and self.commit > 10:
