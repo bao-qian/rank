@@ -28,6 +28,7 @@
 - [x] user_query 变成一个数组 比如 skywind3000 就是 PRC 而不是 china
 - [ ] 分页
 - [x] 查询用户数量最多只有1000 https://github.com/search?p=100&q=location%3Achina&ref=simplesearch&type=Users&utf8=%E2%9C%93
+- [ ] log http error
 
 # 本地运行
 
