@@ -59,10 +59,10 @@
                     <td>
                         <img class="avatar" src="{{ user.avatar_url }}&s=50">
                     </td>
-                    <td>{{ user.star }}</td>
                     <td>
                         <a href="{{ user.url }}" target="_blank">{{ user.login }}</a>
                     </td>
+                    <td>{{ user.star }}</td>
                     <td>{{ user.followers_count }}</td>
                     <td>{{ user.location }}</td>
                     {% for c in user.contribution[:2] %}
