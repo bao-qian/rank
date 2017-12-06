@@ -23,6 +23,7 @@
 - [x] v4 api rate limit 超了后会 sleep。
 - [x]自动翻页的时候考虑 hasnextpage 和 endcursor。
 - [x] log http error
+- [x] error message for v3 v4
 - [ ] 贡献考虑当前时间段对应的 star，比如过去三年的 star，而不是总 star
     - https://developer.github.com/v3/activity/starring/#alternative-response-with-star-creation-timestamps
     - https://developer.github.com/v4/reference/interface/starrable/
