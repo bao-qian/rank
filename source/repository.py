@@ -85,11 +85,12 @@ class Repository(Model):
                 else:
                     self.valid = False
 
-                # 主要语言文件不少于三个
+                # 非文本文件不少于三个
+                total = 0
                 for f in files:
-                    if f[1] == self.language:
-                        if f[0] < 3:
-                            self.valid = False
+                    if f[1] not in config.invalid_language:
+                        total += f[0]
+                self.valid = self.valid and total > 3
 
                 if not self.valid:
                     self.all_invalid.append((self.name_with_owner, files))

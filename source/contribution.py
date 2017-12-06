@@ -58,6 +58,10 @@ class Contribution(Model):
                     (repository.name_with_owner, self.commit, self.total_commit)
                 )
 
+            log('valid code repo contribution <{}> <{}> <{}> <{}>'.format(
+                self.commit, self.total_commit, self.star, self.repository.start_count)
+            )
+
     @classmethod
     def all(cls, login, repositories):
         for r in repositories:
