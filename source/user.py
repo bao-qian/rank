@@ -157,15 +157,18 @@ class User:
         u2 = cls.users_for_extra()
         u1 = cls.users_for_queries()
         us = list(u2) + list(u1)
+        seen = set()
         for i, u in enumerate(us):
-            log('user no.{} {}'.format(i, u.login))
-            cs = list(Contribution.all(u.login, u.repositories))
-            u.contribution = sorted(cs, key=lambda c: c.star, reverse=True)
-            u.star = sum([c.star for c in u.contribution])
-            if u.star > 0:
-                ls = {}
-                for c in cs:
-                    k = c.repository.language
-                    ls[k] = ls.get(k, 0) + c.star
-                u.language = sorted(ls.items(), key=lambda i: i[1], reverse=True)
-                yield u
+            if u.login not in seen:
+                seen.add(u.login)
+                log('user no.{} {}'.format(i, u.login))
+                cs = list(Contribution.all(u.login, u.repositories))
+                u.contribution = sorted(cs, key=lambda c: c.star, reverse=True)
+                u.star = sum([c.star for c in u.contribution])
+                if u.star > 0:
+                    ls = {}
+                    for c in cs:
+                        k = c.repository.language
+                        ls[k] = ls.get(k, 0) + c.star
+                    u.language = sorted(ls.items(), key=lambda i: i[1], reverse=True)
+                    yield u

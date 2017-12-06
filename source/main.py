@@ -8,7 +8,10 @@ from source.contribution import Contribution
 from source.database import init_db
 from source.repository import Repository
 from source.user import User
-from source.utility import log
+from source.utility import (
+    log_error,
+    log,
+)
 
 
 def all_data():
