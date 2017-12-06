@@ -36,8 +36,6 @@
                 <th>Avatar</th>
                 <th>Username</th>
                 <th>Contributed Star</th>
-                <th>Followers</th>
-                <th>Location</th>
                 <th>1st Repo</th>
                 <th>Language</th>
                 <th>Star</th>
@@ -48,6 +46,8 @@
                 <th>Star</th>
                 <th>2st Language</th>
                 <th>Star</th>
+                <th>Followers</th>
+                <th>Location</th>
             </tr>
             </thead>
             <tbody class="table-body">
@@ -63,8 +63,7 @@
                         <a href="{{ user.url }}" target="_blank">{{ user.login }}</a>
                     </td>
                     <td>{{ user.star }}</td>
-                    <td>{{ user.followers_count }}</td>
-                    <td>{{ user.location }}</td>
+
                     {% for c in user.contribution[:2] %}
                         {% set r = c.repository %}
                         <td>
@@ -81,6 +80,7 @@
                             <td></td>
                         {% endfor %}
                     {% endif %}
+
                     {% for l in user.language[:2] %}
                         <td>{{ l[0] }}</td>
                         <td>{{ l[1] }}</td>
@@ -92,7 +92,9 @@
                         {% endfor %}
                     {% endif %}
 
-                </tr>
+                    <td>{{ user.followers_count }}</td>
+                        <td>{{ user.location }}</td>
+                    </tr>
             {% endfor %}
             </tbody>
         </table>
