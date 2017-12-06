@@ -12,7 +12,7 @@ class Repository(Model):
 
     def __init__(self, node):
         self.name = node['name']
-        self.owner = node['owner']
+        self.owner = node['owner']['login']
         self.name_with_owner = node['nameWithOwner']
         p = node['primaryLanguage']
         if p is not None:
@@ -101,7 +101,9 @@ class Repository(Model):
         edges {
               node {
                     name
-                    owner  
+                    owner {
+                        login
+                    } 
                     nameWithOwner
                     url
                     primaryLanguage {
