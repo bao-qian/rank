@@ -33,7 +33,7 @@ class Repository(Model):
 
     def validate_code(self):
         # 有些仓库没有文件或者没有一点所以语言是 none
-        if self.language is None or self.language in config.invalid_language:
+        if self.language is None or self.language in config.invalid_language or self.start_count == 0:
             self.valid = False
             self.all_invalid.append((self.name_with_owner, self.language))
         else:
