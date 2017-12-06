@@ -14,6 +14,11 @@ class Repository(Model):
         self.name = node['name']
         self.owner = node['owner']['login']
         self.name_with_owner = node['nameWithOwner']
+        self.description = node['description']
+        # 有些仓库没有 description，所以是 None
+        if self.description is None:
+            self.description = ''
+
         p = node['primaryLanguage']
         if p is not None:
             self.language = p['name']
@@ -31,11 +36,20 @@ class Repository(Model):
             r = cls(n)
             yield r
 
+    def valid_name_and_description(self):
+        for d in config.invalid_description:
+            if d in self.name.lower() or d in self.description.lower():
+                return False
+        return True
+
     def validate_code(self):
         # 有些仓库没有文件或者没有一点所以语言是 none
         if self.language is None or self.language in config.invalid_language or self.start_count == 0:
             self.valid = False
-            self.all_invalid.append((self.name_with_owner, self.language))
+            self.all_invalid.append((self.name_with_owner, self.start_count, self.language))
+        elif not self.valid_name_and_description():
+            self.valid = False
+            self.all_invalid.append((self.name_with_owner, self.start_count, self.name_with_owner, self.description))
         else:
             # 必须要选一个语言
             query = '/{}/search?l=c'.format(self.name_with_owner)
@@ -43,7 +57,7 @@ class Repository(Model):
                 html = API.get_crawler(query)
             except HTTPError:
                 self.valid = False
-                self.all_invalid.append((self.name_with_owner, self.language))
+                self.all_invalid.append((self.name_with_owner, self.start_count, self.language))
             else:
                 q = PyQuery(html)
                 files = []
@@ -93,7 +107,7 @@ class Repository(Model):
                 self.valid = self.valid and total > 3
 
                 if not self.valid:
-                    self.all_invalid.append((self.name_with_owner, files))
+                    self.all_invalid.append((self.name_with_owner, self.start_count, files))
 
     @staticmethod
     def _query():
@@ -106,6 +120,7 @@ class Repository(Model):
                     } 
                     nameWithOwner
                     url
+                    description
                     primaryLanguage {
                         name
                     }       
