@@ -30,8 +30,8 @@ class Contribution(Model):
             except HTTPError:
                 cs = []
 
-            # 只统计过去三年的贡献
-            threee_year_ago = int(time.time()) - 365 * 24 * 3600 * 3
+            # 只统计过去x年的贡献
+            past = int(time.time()) - 365 * 24 * 3600 * 2.5
             for c in cs:
                 author = c['author']
                 # https://api.github.com/repos/iview/iview/stats/contributors
@@ -41,13 +41,13 @@ class Contribution(Model):
                     weeks = c['weeks']
                     for w in weeks:
                         week_start = int(w['w'])
-                        if week_start > threee_year_ago and w['c'] > 0:
+                        if week_start > past and w['c'] > 0:
                             self.total_commit += w['c']
                             if _login == login:
                                 self.commit += w['c']
 
-            # 至少贡献了十个 commit
-            if self.login == self.repository.owner and self.commit > 10:
+            # 至少贡献了x个 commit
+            if self.login == self.repository.owner and self.commit > 3:
                 self.valid = True
             elif self.login != self.repository.owner and self.commit > 1:
                 self.valid = True
