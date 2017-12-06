@@ -75,7 +75,7 @@ class API(Database.base):
         if r.status_code == 200:
             j = r.json()
 
-            rate_limit = j['rateLimit']
+            rate_limit = j['data']['rateLimit']
             limit = rate_limit['limit']
             remaining = rate_limit['remaining']
             cost = rate_limit['cost']
