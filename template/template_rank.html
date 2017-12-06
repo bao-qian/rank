@@ -35,9 +35,9 @@
                 <th>Rank</th>
                 <th>Avatar</th>
                 <th>Username</th>
+                <th>Contributed Star</th>
                 <th>Followers</th>
                 <th>Location</th>
-                <th>Contributed Star</th>
                 <th>1st Repo</th>
                 <th>Language</th>
                 <th>Star</th>
@@ -59,12 +59,12 @@
                     <td>
                         <img class="avatar" src="{{ user.avatar_url }}&s=50">
                     </td>
+                    <td>{{ user.star }}</td>
                     <td>
                         <a href="{{ user.url }}" target="_blank">{{ user.login }}</a>
                     </td>
                     <td>{{ user.followers_count }}</td>
                     <td>{{ user.location }}</td>
-                    <td>{{ user.star }}</td>
                     {% for c in user.contribution[:2] %}
                         {% set r = c.repository %}
                         <td>
