@@ -14,7 +14,7 @@ from misc import (
     config,
 )
 from source.database import Database
-from source.utility import log
+from source.utility import log, log_error
 
 
 class API(Database.base):
@@ -65,6 +65,7 @@ class API(Database.base):
             return j
         else:
             message = 'error code for url <{}> <{}>'.format(url, r.status_code)
+            log_error(message)
             raise HTTPError(message, response=r)
 
     @classmethod
@@ -106,6 +107,7 @@ class API(Database.base):
             time.sleep(now - rate_limit + 5)
         else:
             message = 'error code for url <{}> <{}>'.format(url, r.status_code)
+            log_error(message)
             raise HTTPError(message, response=r)
 
     @classmethod
@@ -137,6 +139,7 @@ class API(Database.base):
             return html
         else:
             message = 'error code for url <{}> <{}>'.format(url, r.status_code)
+            log_error(message)
             raise HTTPError(message, response=r)
 
     @classmethod
