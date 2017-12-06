@@ -41,8 +41,8 @@ class User:
     def user_from_node(cls, node):
         return User(node)
 
-    @staticmethod
-    def query_china_user(first, after):
+    @classmethod
+    def query_china_user(cls, query, first, after):
         r1 = Repository.query_pinned()
         r2 = Repository.query_popular()
         q = """
@@ -72,11 +72,11 @@ class User:
                     }}
                 }}
             }}
-            """.format(first, after, config.user_query, r1, r2)
+            """.format(first, after, query, r1, r2)
         return q
 
-    @staticmethod
-    def query_user(user):
+    @classmethod
+    def query_user(cls, user):
         r1 = Repository.query_pinned()
         r2 = Repository.query_popular()
         q = """
@@ -98,8 +98,8 @@ class User:
         return q
 
     @classmethod
-    def users_for_query(cls):
-        q = User.query_china_user(config.count_per_request, '')
+    def users_for_query(cls, query, count):
+        q = User.query_china_user(query, config.count_per_request, '')
         log('query', q)
 
         try:
@@ -112,10 +112,10 @@ class User:
             nodes = s['edges']
             yield from User.users_from_nodes(nodes)
 
-            steps = config.user_count // config.count_per_request
+            steps = count // config.count_per_request
             for i in range(steps - 1):
                 after = 'after:" {}"'.format(end_cursor)
-                q = User.query_china_user(config.count_per_request, after)
+                q = User.query_china_user(query, config.count_per_request, after)
                 log('query', q)
 
                 try:
@@ -128,6 +128,11 @@ class User:
                     nodes = s['edges']
                     log('user for query', len(nodes))
                     yield from User.users_from_nodes(nodes)
+
+    @classmethod
+    def users_for_queries(cls):
+        for q, c in config.user_query_and_count:
+            yield from User.users_for_query(q, c)
 
     @classmethod
     def users_for_extra(cls):
@@ -147,7 +152,7 @@ class User:
     @classmethod
     def all(cls):
         u2 = cls.users_for_extra()
-        u1 = cls.users_for_query()
+        u1 = cls.users_for_queries()
         us = list(u2) + list(u1)
         for i, u in enumerate(us):
             log('user no.{} {}'.format(i, u.login))
