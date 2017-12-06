@@ -1,3 +1,4 @@
+import datetime
 import json
 import time
 
@@ -53,14 +54,45 @@ class API(Database.base):
 
     @classmethod
     def _get_v4(cls, query):
+        full_query = f"""
+        {{
+            rateLimit {{
+                limit
+                cost
+                remaining
+                resetAt
+            }}
+            {query}
+        }}
+        """
         url = 'https://api.github.com/graphql'
         json_query = {
-            'query': query
+            'query': full_query
         }
         headers = {'Authorization': 'bearer {}'.format(secret.token)}
         r = requests.post(url=url, json=json_query, headers=headers)
+
         if r.status_code == 200:
             j = r.json()
+
+            rate_limit = j['rateLimit']
+            limit = rate_limit['limit']
+            remaining = rate_limit['remaining']
+            cost = rate_limit['cost']
+            reset_at = rate_limit['resetAt']
+            log('rate limit <{}> remaing <{}> cost <{}> resetAt'.format(
+                limit, remaining, cost, reset_at)
+            )
+            time_format = '%Y-%m-%dT%H:%M:%SZ'
+            reset_at = int(datetime.datetime.strptime(reset_at, time_format).timestamp())
+            now = int(time.time())
+            log('rate will reset in <{}>'.format(now - reset_at))
+
+            # don't knwo when rate will be 0, so compare with 3
+            if remaining < 3:
+                log('no rate remaing')
+                # 保险起见多睡 5 s
+                time.sleep(5 + (now - reset_at))
             cls._set(query, r.text)
             return j
         else:
@@ -157,10 +189,11 @@ class API(Database.base):
             j = r.json()
             cls._set(query, r.text)
             return j
-        elif rate_remaing == 0:
+        # don't knwo when rate will be 0, so compare with 3
+        elif rate_remaing < 3:
             log('no rate remaing')
             # 保险起见多睡 5 s
-            time.sleep(now - rate_limit + 5)
+            time.sleep(5 + (now - rate_reset))
         else:
             message = 'error code for url <{}> <{}>'.format(url, r.status_code)
             log_error(message)

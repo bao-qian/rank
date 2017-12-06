@@ -55,19 +55,17 @@ class User:
         r1 = Repository.query_pinned()
         r2 = Repository.query_popular()
         q = f"""
-            {{
-                user(login: "{user}") {{
-                    login
-                    name
-                    url
-                    avatarUrl
-                    followers {{
-                        totalCount
-                    }}
-                    location
-                    {r1}
-                    {r2}
+            user(login: "{user}") {{
+                login
+                name
+                url
+                avatarUrl
+                followers {{
+                    totalCount
                 }}
+                location
+                {r1}
+                {r2}
             }}
             """
         return q
@@ -104,6 +102,7 @@ class User:
             except HTTPError:
                 yield from []
             else:
+                log('users_for_extra', r)
                 node = r['data']['user']
                 print('users for extra <{}>'.format(node['name']))
                 u = User(node)
