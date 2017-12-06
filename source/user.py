@@ -31,57 +31,32 @@ class User:
         self.star = 0
 
     @classmethod
-    def users_from_nodes(cls, nodes):
-        for node in nodes:
-            n = node['node']
-            log('users_from_nodes <{}>'.format(n['name']))
-            yield User(n)
-
-    @classmethod
-    def user_from_node(cls, node):
-        return User(node)
-
-    @classmethod
-    def query_china_user(cls, query, first, after):
+    def query_users(cls):
         r1 = Repository.query_pinned()
         r2 = Repository.query_popular()
-        q = """
-            {{
-                search(first: {},{} query: "{}", type: USER) {{
-                    pageInfo {{
-                      endCursor
-                      hasNextPage
-                      hasPreviousPage
-                      startCursor
-                    }}
-                    edges {{
-                        node {{
-                            ... on User {{
-                            login
-                            name
-                            url
-                            avatarUrl
-                            followers {{
-                                totalCount
-                            }}
-                            location
-                            {}
-                            {}
-                            }}
-                        }}
-                    }}
+        q = f"""
+            ... on User {{
+                login
+                name
+                url
+                avatarUrl
+                followers {{
+                    totalCount
                 }}
+                location
+                {r1}
+                {r2}
             }}
-            """.format(first, after, query, r1, r2)
+            """
         return q
 
     @classmethod
     def query_user(cls, user):
         r1 = Repository.query_pinned()
         r2 = Repository.query_popular()
-        q = """
+        q = f"""
             {{
-                user(login: "{}") {{
+                user(login: "{user}") {{
                     login
                     name
                     url
@@ -90,47 +65,29 @@ class User:
                         totalCount
                     }}
                     location
-                    {}
-                    {}
+                    {r1}
+                    {r2}
                 }}
             }}
-            """.format(user, r1, r2)
+            """
         return q
 
     @classmethod
     def users_for_query(cls, query, count):
-        q = User.query_china_user(query, config.count_per_request, '')
-        log('query', q)
+        node = User.query_users()
+        log('query', node)
+        parameter = {
+            'query': query,
+            'type': 'USER',
+        }
+        nodes = API.get_v4_connection(
+            'search', parameter, node, config.count_per_request, count
+        )
 
-        try:
-            r = API.get_v4(q)
-        except HTTPError:
-            yield from []
-        else:
-            s = r['data']['search']
-            end_cursor = s['pageInfo']['endCursor']
-            nodes = s['edges']
-            yield from User.users_from_nodes(nodes)
-
-            steps = count // config.count_per_request
-            for i in range(steps - 1):
-                after = 'after:" {}"'.format(end_cursor)
-                q = User.query_china_user(query, config.count_per_request, after)
-                log('query', q)
-
-                try:
-                    r = API.get_v4(q)
-                except HTTPError:
-                    yield from []
-                else:
-                    s = r['data']['search']
-                    nodes = s['edges']
-                    log('user for query', len(nodes))
-                    yield from User.users_from_nodes(nodes)
-                    end_cursor = s['pageInfo']['endCursor']
-                    has_next_page = s['pageInfo']['hasNextPage']
-                    if end_cursor is None or not has_next_page:
-                        break
+        for node in nodes:
+            n = node['node']
+            log('users_from_nodes <{}>'.format(n['name']))
+            yield User(n)
 
     @classmethod
     def users_for_queries(cls):
@@ -143,13 +100,13 @@ class User:
             q = User.query_user(e)
             log('query', q)
             try:
-                r = API.get_v4(q)
+                r = API.get_v4_object(q)
             except HTTPError:
                 yield from []
             else:
                 node = r['data']['user']
                 print('users for extra <{}>'.format(node['name']))
-                u = User.user_from_node(node)
+                u = User(node)
                 yield u
 
     @classmethod

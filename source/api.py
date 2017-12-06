@@ -69,7 +69,36 @@ class API(Database.base):
             raise HTTPError(message, response=r)
 
     @classmethod
-    def get_v4(cls, query, force=False):
+    def query_for_connection(cls, keyword, parameter, node):
+        parameter_string = ""
+        for k, v in parameter.items():
+            # type is enum, so no double quote
+            if type(v) is str and k != 'type':
+                parameter_string += f'{k}: "{v}" '
+            else:
+                parameter_string += f'{k}: {v} '
+
+        q = f"""
+            {{
+                {keyword}({parameter_string}) {{
+                    pageInfo {{
+                      endCursor
+                      hasNextPage
+                      hasPreviousPage
+                      startCursor
+                    }}
+                    edges {{
+                        node {{
+                            {node}
+                        }}
+                    }}
+                }}
+            }}
+        """
+        return q
+
+    @classmethod
+    def _get_v4_cache(cls, query, force=False):
         if force:
             return cls._get_v4(query)
         else:
@@ -80,6 +109,33 @@ class API(Database.base):
             else:
                 r = json.loads(c.response)
                 return r
+
+    @classmethod
+    def get_v4_connection(cls, keyword, parameter, node, first, count):
+        parameter['first'] = first
+        q = cls.query_for_connection(keyword, parameter, node)
+        r = cls._get_v4_cache(q)
+        s = r['data'][keyword]
+        nodes = s['edges']
+        yield from nodes
+        end_cursor = s['pageInfo']['endCursor']
+
+        steps = count // first
+        for i in range(steps - 1):
+            parameter['after'] = end_cursor
+            q = cls.query_for_connection(keyword, parameter, node)
+            r = cls._get_v4_cache(q)
+            s = r['data'][keyword]
+            nodes = s['edges']
+            yield from nodes
+            end_cursor = s['pageInfo']['endCursor']
+            has_next_page = s['pageInfo']['hasNextPage']
+            if end_cursor is None or not has_next_page:
+                break
+
+    @classmethod
+    def get_v4_object(cls, query, force=False):
+        return cls._get_v4_cache(query, force)
 
     @classmethod
     def _get_v3(cls, query):
