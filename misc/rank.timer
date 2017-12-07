@@ -3,4 +3,4 @@ Description=Code Rank Timer
 
 [Timer]
 # auto run crawler service
-OnUnitInactiveSec=10800seconds
+OnUnitInactiveSec=3600seconds
