@@ -102,7 +102,6 @@ class User:
             except HTTPError:
                 yield from []
             else:
-                log('users_for_extra', r)
                 node = r['data']['user']
                 print('users for extra <{}>'.format(node['name']))
                 u = User(node)
