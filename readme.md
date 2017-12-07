@@ -66,5 +66,6 @@ vagrant up
 - [ ] 分页
 - [ ] debug 页面，含 invalid repo contribution
 - [ ] 更详尽的 api 报错
+- [ ] contribute api 202 问题需要单独处理 
 - [x] 查询用户数量最多只有1000 https://github.com/search?p=100&q=location%3Achina&ref=simplesearch&type=Users&utf8=%E2%9C%93
 
