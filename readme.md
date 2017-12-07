@@ -1,5 +1,39 @@
 # 程序员千人计划
 
+## 特性
+
+- 会统计你在其他仓库的贡献，如 org 账户或者其他个人 repo。
+- 星星贡献 = commit 所占比率 * 总星星
+- 会移除教程类和资源收集类仓库，这是纯代码排名。
+- alpha 地址： http://139.59.106.136
+
+## 本地运行
+
+下载 vagrant 并运行：
+```bash
+vagrant up
+```
+
+能看见如下输出，打开其中正确地址：
+```bash
+==> default: http://10.0.2.15
+==> default: http://192.168.0.122
+```
+
+手动安装自行参照 `misc/provision.sh` 中的命令
+
+## 参数
+
+本地开发自行调整
+1. `config.py` 中的
+    - `user_query_and_count` 抓什么样的数据
+    - `count_per_request` 抓信息时每次请求多少条数据
+    - `cache_time` 缓存多久失效
+2. `rank.timer` 中的
+    - `OnUnitInactiveSec`  多久程序运行一次
+
+## todo
+
 - [x] github 中国区用户数据
    - [x] location 含有 china。
    - [x] 先爬 100 个，排序。
@@ -31,35 +65,4 @@
 - [x] user_query 变成一个数组 比如 skywind3000 就是 PRC 而不是 china
 - [ ] 分页
 - [x] 查询用户数量最多只有1000 https://github.com/search?p=100&q=location%3Achina&ref=simplesearch&type=Users&utf8=%E2%9C%93
-
-# 本地运行
-
-下载 vagrant 并运行：
-```bash
-vagrant up
-```
-
-能看见如下输出，打开其中正确地址：
-```bash
-==> default: http://10.0.2.15
-==> default: http://192.168.0.122
-```
-
-手动安装自行参照 `misc/provision.sh` 中的命令
-
-# 参数
-
-本地开发自行调整
-1. `config.py` 中的
-    - `user_count` 抓多少个用户的信息
-    - `count_per_request` 抓所有用户信息的时候每次请求多少条数据
-    - `cache_time` 缓存多久失效
-2. `rank.timer` 中的
-    - `OnUnitInactiveSec`  多久程序运行一次
-
-
-
-
-
-
 
