@@ -67,7 +67,13 @@
                     {% for c in user.contribution[:2] %}
                         {% set r = c.repository %}
                         <td>
-                            <a href="{{ r.url }}" target="_blank">{{ r.name }}</a>
+                            <a href="{{ r.url }}" target="_blank">
+                                {% if r.owner == c.login %}
+                                    {{ r.name }}
+                                {% else %}
+                                    {{ r.name_with_owner }}
+                                {% endif %}
+                            </a>
                         </td>
                         <td>{{ r.language }}</td>
                         <td>{{ c.star }}</td>
@@ -93,8 +99,8 @@
                     {% endif %}
 
                     <td>{{ user.followers_count }}</td>
-                        <td>{{ user.location }}</td>
-                    </tr>
+                    <td>{{ user.location }}</td>
+                </tr>
             {% endfor %}
             </tbody>
         </table>
