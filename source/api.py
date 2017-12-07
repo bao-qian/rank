@@ -91,7 +91,7 @@ class API(Database.base):
             # don't knwo when rate will be 0, so compare with 3
             if remaining < 3:
                 log('no rate remaing')
-                # 保险起见多睡 5 s
+                # sleep 5 seconds more to guarantee success
                 time.sleep(5 + (now - reset_at))
             cls._set(query, r.text)
             return j
@@ -190,7 +190,7 @@ class API(Database.base):
         # don't knwo when rate will be 0, so compare with 3
         elif rate_remaing < 3:
             log('no rate remaing')
-            # 保险起见多睡 5 s
+            # sleep 5 seconds more to guarantee success
             time.sleep(5 + (now - rate_reset))
         else:
             message = 'error code for url <{}> <{}>'.format(url, r.status_code)
