@@ -36,7 +36,6 @@ invalid_language = [
 invalid_description = [
     'interview',
     'tutorial',
-    'leetcode',
     'study',
     'tips',
     '学习笔记',
