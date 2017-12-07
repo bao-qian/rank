@@ -8,6 +8,7 @@ user_query_and_count = [
 count_per_request = 100
 cache_time = 36000
 contribution_year = 3
+thread = 100
 
 root = os.path.dirname(os.path.dirname(__file__))
 static = os.path.join(root, 'static')

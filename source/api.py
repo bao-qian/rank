@@ -1,6 +1,7 @@
 import datetime
 import json
 import time
+from threading import Lock
 
 import requests
 from requests import HTTPError
@@ -23,11 +24,14 @@ class API(Database.base):
     query = Column(String, primary_key=True)
     response = Column(String)
     unixtime = Column(Integer)
+    db_lock = Lock()
 
     @classmethod
     def _get(cls, query):
         log('get result for query', query)
+        cls.db_lock.acquire()
         m = Database.session.query(API).filter(API.query == query).scalar()
+        cls.db_lock.release()
         if m is not None:
             now = int(time.time())
             t = now - m.unixtime
@@ -49,8 +53,10 @@ class API(Database.base):
             response=response,
             unixtime=now,
         )
+        cls.db_lock.acquire()
         Database.session.merge(c)
         Database.session.commit()
+        cls.db_lock.release()
 
     @classmethod
     def _get_v4(cls, query):
@@ -187,8 +193,8 @@ class API(Database.base):
             j = r.json()
             cls._set(query, r.text)
             return j
-        # don't knwo when rate will be 0, so compare with 3
-        elif rate_remaing < 3:
+        # don't knwo when rate will be 0, so compare with 3 + thread number
+        elif rate_remaing < 3 + config.thread:
             log('no rate remaing')
             # sleep 5 seconds more to guarantee success
             time.sleep(5 + (now - rate_reset))

@@ -1,13 +1,17 @@
+from queue import Queue
+
 from requests import HTTPError
 
 from misc import config
 from source.api import API
 from source.contribution import Contribution
 from source.repository import Repository
-from source.utility import log
+from source.utility import log, ThreadWorker
 
 
 class User:
+    all = []
+
     def __init__(self, node):
         self.name = node['name']
         self.login = node['login']
@@ -108,22 +112,37 @@ class User:
                 yield u
 
     @classmethod
+    def process(cls, i, u, seen):
+        if u.login not in seen:
+            seen.add(u.login)
+            log('user no.{} {}'.format(i, u.login))
+            cs = list(Contribution.all(u.login, u.repositories))
+            u.contribution = sorted(cs, key=lambda c: c.star, reverse=True)
+            u.star = sum([c.star for c in u.contribution])
+            if u.star > 0:
+                ls = {}
+                for c in cs:
+                    k = c.repository.language
+                    ls[k] = ls.get(k, 0) + c.star
+                u.language = sorted(ls.items(), key=lambda i: i[1], reverse=True)
+                return u
+
+    @classmethod
     def all(cls):
+        output = []
+        queue = Queue()
+        for i in range(config.thread):
+            worker = ThreadWorker(queue, output, cls.process)
+            worker.daemon = True
+            worker.start()
+
         u2 = cls.users_for_extra()
         u1 = cls.users_for_queries()
         us = list(u2) + list(u1)
         seen = set()
+
         for i, u in enumerate(us):
-            if u.login not in seen:
-                seen.add(u.login)
-                log('user no.{} {}'.format(i, u.login))
-                cs = list(Contribution.all(u.login, u.repositories))
-                u.contribution = sorted(cs, key=lambda c: c.star, reverse=True)
-                u.star = sum([c.star for c in u.contribution])
-                if u.star > 0:
-                    ls = {}
-                    for c in cs:
-                        k = c.repository.language
-                        ls[k] = ls.get(k, 0) + c.star
-                    u.language = sorted(ls.items(), key=lambda i: i[1], reverse=True)
-                    yield u
+            queue.put((i, u, seen))
+
+        queue.join()
+        return output

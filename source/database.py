@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker, Session
 
 class Database:
     base = declarative_base()
-    engine = create_engine("sqlite:///rank.db")
+    engine = create_engine("sqlite:///rank.db?check_same_thread=False")
     session: Session = sessionmaker(bind=engine)()
 
 
