@@ -28,6 +28,7 @@ extra_user = [
     'xinzhengzhang',
     'bbcallen',
     'yukon',
+    'rebornix',
 ]
 
 invalid_language = [
