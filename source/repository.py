@@ -15,7 +15,7 @@ class Repository(Model):
         self.owner = node['owner']['login']
         self.name_with_owner = node['nameWithOwner']
         self.description = node['description']
-        # 有些仓库没有 description，所以是 None
+        # some repo has no description
         if self.description is None:
             self.description = ''
 
@@ -43,7 +43,7 @@ class Repository(Model):
         return True
 
     def validate_code(self):
-        # 有些仓库没有文件或者没有一点所以语言是 none
+        # language may be none for some repo due to none files or other reason
         if self.language is None or self.language in config.invalid_language or self.start_count == 0:
             self.valid = False
             self.all_invalid.append((self.name_with_owner, self.start_count, self.language))
@@ -51,7 +51,7 @@ class Repository(Model):
             self.valid = False
             self.all_invalid.append((self.name_with_owner, self.start_count, self.name_with_owner, self.description))
         else:
-            # 必须要选一个语言
+            # at least one language to get result
             query = '/{}/search?l=c'.format(self.name_with_owner)
             try:
                 html = API.get_crawler(query)
@@ -68,7 +68,7 @@ class Repository(Model):
                         language = parts[1]
                         files.append((count, language))
                     else:
-                        # 选了一个语言后，该语言在右侧没有文件统计
+                        # the selected language has no number count in right sidebar
                         head = q('.codesearch-results h3').text().strip()
                         text1 = 'code results'
                         text2 = 'Results'
@@ -91,7 +91,7 @@ class Repository(Model):
                     log('validate code <{}> <{}>'.format(files, files))
                     if f1[1] in config.invalid_language:
                         self.valid = False
-                        # 如果文件最多的两个语言相等，则他们都不能是文本
+                        # the top 2 type should be code instead of text
                     elif f1[0] == f2[0] and f2[1] in config.invalid_language:
                         self.valid = False
                     else:
@@ -99,7 +99,7 @@ class Repository(Model):
                 else:
                     self.valid = False
 
-                # 非文本文件不少于三个
+                # code files shoud be at least 3
                 total = 0
                 for f in files:
                     if f[1] not in config.invalid_language:

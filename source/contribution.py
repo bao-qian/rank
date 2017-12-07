@@ -2,6 +2,7 @@ import time
 
 from requests import HTTPError
 
+import config
 from source.model import Model
 from source.repository import Repository
 from source.utility import log
@@ -30,8 +31,8 @@ class Contribution(Model):
             except HTTPError:
                 cs = []
 
-            # 只统计过去x年的贡献
-            past = int(time.time()) - 365 * 24 * 3600 * 2.5
+            # only for last x year
+            past = int(time.time()) - int(365 * 24 * 3600 * config.contribution_year)
             for c in cs:
                 author = c['author']
                 # https://api.github.com/repos/iview/iview/stats/contributors
@@ -46,7 +47,7 @@ class Contribution(Model):
                             if _login == login:
                                 self.commit += w['c']
 
-            # 至少贡献了x个 commit
+            # at least x commit
             if self.login == self.repository.owner and self.commit > 3:
                 self.valid = True
             elif self.login != self.repository.owner and self.commit > 1:
