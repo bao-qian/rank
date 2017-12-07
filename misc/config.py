@@ -26,8 +26,7 @@ extra_user = [
     'icylogic',
     'GangZhuo',
     'xinzhengzhang',
-    'bbcallen',
-    'yukon',
+    'zhouxinyu',
     'rebornix',
 ]
 
@@ -50,6 +49,7 @@ invalid_description = [
     'study',
     'tips',
     '学习笔记',
+    '读书笔记',
     '学习资源',
     '开发实战',
     '交流群',
