@@ -18,6 +18,16 @@ extra_user = [
     'guaxiao',
     'vczh',
     'JeffreyZhao',
+    'librehat',
+    'aa65535',
+    'riobard',
+    'gyteng',
+    'zonyitoo',
+    'icylogic',
+    'GangZhuo',
+    'xinzhengzhang',
+    'bbcallen',
+    'yukon',
 ]
 
 invalid_language = [
