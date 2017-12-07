@@ -30,8 +30,10 @@ class API(Database.base):
     def _get(cls, query):
         log('get result for query', query)
         cls.db_lock.acquire()
+        log('lock accquired', query)
         m = Database.session.query(API).filter(API.query == query).scalar()
         cls.db_lock.release()
+        log('lock released', query)
         if m is not None:
             now = int(time.time())
             t = now - m.unixtime
@@ -53,10 +55,12 @@ class API(Database.base):
             response=response,
             unixtime=now,
         )
+        log('lock accquired', query)
         cls.db_lock.acquire()
         Database.session.merge(c)
         Database.session.commit()
         cls.db_lock.release()
+        log('lock released', query)
 
     @classmethod
     def _get_v4(cls, query):
@@ -86,19 +90,19 @@ class API(Database.base):
             remaining = rate_limit['remaining']
             cost = rate_limit['cost']
             reset_at = rate_limit['resetAt']
-            log('rate limit <{}> remaing <{}> cost <{}> resetAt <{}>'.format(
+            log('v4 rate limit <{}> remaing <{}> cost <{}> resetAt <{}>'.format(
                 limit, remaining, cost, reset_at)
             )
             time_format = '%Y-%m-%dT%H:%M:%SZ'
             reset_at = int(datetime.datetime.strptime(reset_at, time_format).timestamp())
             now = int(time.time())
-            log('rate will reset in <{}>'.format(now - reset_at))
+            log('v4 rate will reset in <{}>'.format(reset_at - now))
 
             # don't knwo when rate will be 0, so compare with 3
             if remaining < 3:
-                log('no rate remaing')
+                log('v4 no rate remaing')
                 # sleep 5 seconds more to guarantee success
-                time.sleep(5 + (now - reset_at))
+                time.sleep(5 + (reset_at - now))
             cls._set(query, r.text)
             return j
         else:
@@ -184,9 +188,9 @@ class API(Database.base):
         rate_limit = int(r.headers['X-RateLimit-Limit'])
         rate_reset = int(r.headers['X-RateLimit-Reset'])
         rate_remaing = int(r.headers['X-RateLimit-Remaining'])
-        log('rate limit <{}> rate remaing <{}>'.format(rate_limit, rate_remaing))
+        log('v3 rate limit <{}> rate remaing <{}>'.format(rate_limit, rate_remaing))
         now = int(time.time())
-        log('rate will reset in <{}>'.format(now - rate_reset))
+        log('v3 rate will reset in <{}>'.format(rate_reset - now))
 
         if r.status_code == 200:
             log('get v3 r', r)
@@ -195,9 +199,9 @@ class API(Database.base):
             return j
         # don't knwo when rate will be 0, so compare with 3 + thread number
         elif rate_remaing < 3 + config.thread:
-            log('no rate remaing')
+            log('v3 no rate remaing')
             # sleep 5 seconds more to guarantee success
-            time.sleep(5 + (now - rate_reset))
+            time.sleep(5 + (rate_reset - now))
         else:
             message = 'error code for url <{}> <{}>'.format(url, r.status_code)
             log_error(message)
