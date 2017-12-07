@@ -80,7 +80,7 @@ class API(Database.base):
             remaining = rate_limit['remaining']
             cost = rate_limit['cost']
             reset_at = rate_limit['resetAt']
-            log('rate limit <{}> remaing <{}> cost <{}> resetAt'.format(
+            log('rate limit <{}> remaing <{}> cost <{}> resetAt <{}>'.format(
                 limit, remaining, cost, reset_at)
             )
             time_format = '%Y-%m-%dT%H:%M:%SZ'
