@@ -66,7 +66,7 @@ python -m source.main
 - error code 451 for DCMA takedown
     - https://developer.github.com/changes/2016-03-17-the-451-status-code-is-now-supported/
     - log and block those users
-- timeout icon in github search page
+- [ ] timeout icon in github search page
     - https://help.github.com/articles/troubleshooting-search-queries/
     - use last cache if possible otherwise return empty
     
