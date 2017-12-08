@@ -10,9 +10,10 @@ from sqlalchemy import (
 )
 
 from source.exception import (
-    ErrorCode202,
     NotExist,
     ErrorCode,
+    ErrorCode202,
+    ErrorCode451,
 )
 from misc import (
     secret,
@@ -192,8 +193,6 @@ class API(Database.base):
             cls._set(query, r.text)
             return j
         elif r.status_code == 202:
-            message = f'error code 202 for {query}'
-            log_error(message)
             raise ErrorCode202(202, query)
         # don't knwo when rate will be 0, so compare with 3
         elif rate_remaing < 3:
@@ -211,7 +210,6 @@ class API(Database.base):
             try:
                 cls._get_v3(query)
             except ErrorCode202:
-                # https://developer.github.com/v3/repos/statistics/
                 time.sleep(5)
                 cls._get_v3(query)
         else:
@@ -222,7 +220,6 @@ class API(Database.base):
                 try:
                     return cls._get_v3(query)
                 except ErrorCode202:
-                    # https://developer.github.com/v3/repos/statistics/
                     r = json.loads(m.response)
                     return r
 
@@ -240,9 +237,9 @@ class API(Database.base):
             html = r.text
             cls._set(query, html)
             return html
+        elif r.status_code == 451:
+            raise ErrorCode451(451, query)
         else:
-            message = 'error code for url <{}> <{}>'.format(url, r.status_code)
-            log_error(message)
             raise ErrorCode(r.status_code, query)
 
     @classmethod
