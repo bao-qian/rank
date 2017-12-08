@@ -1,6 +1,6 @@
 from pyquery import PyQuery
 
-from exception import ErrorCode
+from source.exception import ErrorCode
 from misc import config
 from source.model import Model
 from source.api import API

@@ -1,4 +1,4 @@
-from exception import ErrorCode
+from source.exception import ErrorCode
 from misc import config
 from source.api import API
 from source.contribution import Contribution
