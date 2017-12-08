@@ -79,7 +79,7 @@ class Repository(Model):
 
     def valid_code_files(self):
         self.add_code_files()
-        if len(self.files) < 1:
+        if len(self.files) < 2:
             return False
         else:
             files = sorted(self.files, key=lambda file: file[0], reverse=True)
