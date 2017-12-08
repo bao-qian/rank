@@ -3,7 +3,6 @@ import json
 import time
 
 import requests
-from requests import HTTPError
 from sqlalchemy import (
     Column,
     String,
@@ -13,6 +12,7 @@ from sqlalchemy import (
 from source.exception import (
     ErrorCode202,
     NotExist,
+    ErrorCode,
 )
 from misc import (
     secret,
@@ -103,9 +103,7 @@ class API(Database.base):
             cls._set(query, r.text)
             return j
         else:
-            message = 'error code for url <{}> <{}>'.format(url, r.status_code)
-            log_error(message)
-            raise HTTPError(message, response=r)
+            raise ErrorCode(r.status_code, query)
 
     @classmethod
     def query_for_connection(cls, keyword, parameter, node):
@@ -194,16 +192,14 @@ class API(Database.base):
         elif r.status_code == 202:
             message = f'error code 202 for {query}'
             log_error(message)
-            raise ErrorCode202(message, 202, query)
+            raise ErrorCode202(202, query)
         # don't knwo when rate will be 0, so compare with 3
         elif rate_remaing < 3:
             log('v3 no rate remaing')
             # sleep 5 seconds more to guarantee success
             time.sleep(5 + (rate_reset - now))
         else:
-            message = 'error code for url <{}> <{}>'.format(url, r.status_code)
-            log_error(message)
-            raise HTTPError(message, response=r)
+            raise ErrorCode(r.status_code, query)
 
     @classmethod
     def get_v3(cls, query):
@@ -245,7 +241,7 @@ class API(Database.base):
         else:
             message = 'error code for url <{}> <{}>'.format(url, r.status_code)
             log_error(message)
-            raise HTTPError(message, response=r)
+            raise ErrorCode(r.status_code, query)
 
     @classmethod
     def get_crawler(cls, query):

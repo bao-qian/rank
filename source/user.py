@@ -1,5 +1,4 @@
-from requests import HTTPError
-
+from exception import ErrorCode
 from misc import config
 from source.api import API
 from source.contribution import Contribution
@@ -99,7 +98,7 @@ class User:
             log('query', q)
             try:
                 r = API.get_v4_object(q)
-            except HTTPError:
+            except ErrorCode:
                 yield from []
             else:
                 log('users_for_extra', r)

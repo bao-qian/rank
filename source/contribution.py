@@ -1,7 +1,6 @@
 import time
 
-from requests import HTTPError
-
+from exception import ErrorCode
 from misc import config
 from source.model import Model
 from source.repository import Repository
@@ -26,7 +25,7 @@ class Contribution(Model):
 
         try:
             cs = API.get_v3(q)
-        except HTTPError:
+        except ErrorCode:
             cs = []
 
         # only for last x year
