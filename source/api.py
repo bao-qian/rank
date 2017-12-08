@@ -10,6 +10,7 @@ from sqlalchemy import (
     Integer,
 )
 
+from exception import ErrorCode202
 from misc import (
     secret,
     config,
@@ -29,16 +30,19 @@ class API(Database.base):
         log('get result for query', query)
         m = Database.session.query(API).filter(API.query == query).scalar()
         if m is not None:
-            now = int(time.time())
-            t = now - m.unixtime
-            if t < config.cache_time:
-                return m
-            else:
-                log('query cache not valid')
-                raise ValueError
+            return m
         else:
             log('query not exist')
             raise ValueError
+
+    @classmethod
+    def _valid_cache(cls, m):
+        now = int(time.time())
+        t = now - m.unixtime
+        if t < config.cache_time:
+            return True
+        else:
+            return False
 
     @classmethod
     def _set(cls, query, response):
@@ -184,6 +188,10 @@ class API(Database.base):
             j = r.json()
             cls._set(query, r.text)
             return j
+        elif r.status_code == 202:
+            message = f'error code 202 for {query}'
+            log_error(message)
+            raise ErrorCode202(message, 202, query)
         # don't knwo when rate will be 0, so compare with 3
         elif rate_remaing < 3:
             log('v3 no rate remaing')
@@ -197,12 +205,25 @@ class API(Database.base):
     @classmethod
     def get_v3(cls, query):
         try:
-            c = cls._get(query)
+            m = cls._get(query)
         except ValueError:
-            return cls._get_v3(query)
+            try:
+                cls._get_v3(query)
+            except ErrorCode202:
+                # https://developer.github.com/v3/repos/statistics/
+                time.sleep(5)
+                cls._get_v3(query)
         else:
-            r = json.loads(c.response)
-            return r
+            if cls._valid_cache(m):
+                r = json.loads(m.response)
+                return r
+            else:
+                try:
+                    return cls._get_v3(query)
+                except ErrorCode202:
+                    # https://developer.github.com/v3/repos/statistics/
+                    r = json.loads(m.response)
+                    return r
 
     @classmethod
     def _get_crawler(cls, query):
