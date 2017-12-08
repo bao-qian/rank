@@ -14,6 +14,7 @@ from source.exception import (
     ErrorCode,
     ErrorCode202,
     ErrorCode451,
+    GraphQLError,
 )
 from misc import (
     secret,
@@ -82,27 +83,29 @@ class API(Database.base):
 
         if r.status_code == 200:
             j = r.json()
+            if 'errors' in j:
+                raise GraphQLError(j['errors'])
+            else:
+                rate_limit = j['data']['rateLimit']
+                limit = rate_limit['limit']
+                remaining = rate_limit['remaining']
+                cost = rate_limit['cost']
+                reset_at = rate_limit['resetAt']
+                log('v4 rate limit <{}> remaing <{}> cost <{}> resetAt <{}>'.format(
+                    limit, remaining, cost, reset_at)
+                )
+                time_format = '%Y-%m-%dT%H:%M:%SZ'
+                reset_at = int(datetime.datetime.strptime(reset_at, time_format).timestamp())
+                now = int(time.time())
+                log('v4 rate will reset in <{}>'.format(reset_at - now))
 
-            rate_limit = j['data']['rateLimit']
-            limit = rate_limit['limit']
-            remaining = rate_limit['remaining']
-            cost = rate_limit['cost']
-            reset_at = rate_limit['resetAt']
-            log('v4 rate limit <{}> remaing <{}> cost <{}> resetAt <{}>'.format(
-                limit, remaining, cost, reset_at)
-            )
-            time_format = '%Y-%m-%dT%H:%M:%SZ'
-            reset_at = int(datetime.datetime.strptime(reset_at, time_format).timestamp())
-            now = int(time.time())
-            log('v4 rate will reset in <{}>'.format(reset_at - now))
-
-            # don't knwo when rate will be 0, so compare with 3
-            if remaining < 3:
-                log('v4 no rate remaing')
-                # sleep 5 seconds more to guarantee success
-                time.sleep(5 + (reset_at - now))
-            cls._set(query, r.text)
-            return j
+                # don't knwo when rate will be 0, so compare with 3
+                if remaining < 3:
+                    log('v4 no rate remaing')
+                    # sleep 5 seconds more to guarantee success
+                    time.sleep(5 + (reset_at - now))
+                cls._set(query, r.text)
+                return j
         else:
             raise ErrorCode(r.status_code, query)
 

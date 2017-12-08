@@ -1,8 +1,18 @@
+import json
+
 from source.utility import log_error
 
 
 class NotExist(Exception):
     pass
+
+
+class GraphQLError(Exception):
+    def __init__(self, errors):
+        message = json.dumps(errors)
+        log_error(message)
+        super().__init__(message)
+        self.errors = errors
 
 
 class ErrorCode(Exception):
