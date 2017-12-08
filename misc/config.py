@@ -6,7 +6,7 @@ user_query_and_count = [
     ('location:PRC followers:>=100', 1000),
 ]
 count_per_request = 100
-cache_time = 36000
+cache_time = 36000000000000000
 contribution_year = 3
 
 root = os.path.dirname(os.path.dirname(__file__))
