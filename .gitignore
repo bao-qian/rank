@@ -53,6 +53,7 @@ fabric.properties
 *.db
 *.log
 secret.py
+config.py
 *.pyc
 .vagrant
 rank.html
