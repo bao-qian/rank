@@ -135,12 +135,14 @@ class API(Database.base):
     @classmethod
     def _get_v4_cache(cls, query):
         try:
-            c = cls._get(query)
+            m = cls._get(query)
         except NotExist:
             return cls._get_v4(query)
         else:
-            r = json.loads(c.response)
-            return r
+            if cls._valid_cache(m):
+                return json.loads(m.response)
+            else:
+                return cls._get_v4(query)
 
     @classmethod
     def get_v4_connection(cls, keyword, parameter, node, first, count):
