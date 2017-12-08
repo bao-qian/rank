@@ -10,28 +10,15 @@
 
 ## 本地运行
 
-下载 vagrant 并运行：
+python 要求 3.6
+
 ```bash
-vagrant up
+git clone https://github.com/happlebao/rank.git
+cd rank
+cp misc/test_config.py misc/config.py
+pip install Fabric3 PyQuery SQLAlchemy
+python -m source.main 
 ```
-
-能看见如下输出，打开其中正确地址：
-```bash
-==> default: http://10.0.2.15
-==> default: http://192.168.0.122
-```
-
-手动安装自行参照 `misc/provision.sh` 中的命令
-
-## 参数
-
-本地开发自行调整
-1. `config.py` 中的
-    - `user_query_and_count` 抓什么样的数据
-    - `count_per_request` 抓信息时每次请求多少条数据
-    - `cache_time` 缓存多久失效
-2. `rank.timer` 中的
-    - `OnUnitInactiveSec`  多久程序运行一次
 
 ## todo
 
