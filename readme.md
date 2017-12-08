@@ -61,11 +61,11 @@ python -m source.main
 ## github error
 - error code 202 for v3 statistics api
     - https://developer.github.com/v3/repos/statistics/
-    - sleep
+    - use last cache if possible otherwise sleep
 - error code 451 for DCMA takedown
     - https://developer.github.com/changes/2016-03-17-the-451-status-code-is-now-supported/
     - log and block those users
 - timeout icon in github search page
     - https://help.github.com/articles/troubleshooting-search-queries/
-    - delete cache and return empty
+    - use last cache if possible otherwise return empty
     
