@@ -27,6 +27,9 @@ extra_user = [
 
 block_user = [
     'diwu',
+    'xuzhezhaozhao',
+    'rover12421',
+    'tiankon',
 ]
 
 root = os.path.dirname(os.path.dirname(__file__))
