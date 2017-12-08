@@ -10,7 +10,7 @@ from sqlalchemy import (
     Integer,
 )
 
-from exception import (
+from source.exception import (
     ErrorCode202,
     NotExist,
 )
