@@ -32,11 +32,11 @@ class API(Database.base):
     def _get(cls, query):
         log('get result for query', query)
         m = Database.session.query(API).filter(API.query == query).scalar()
-        if m is not None:
-            return m
-        else:
+        if m is None:
             log('query not exist')
             raise NotExist
+        else:
+            return m
 
     @classmethod
     def _valid_cache(cls, m):
