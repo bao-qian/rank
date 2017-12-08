@@ -60,16 +60,24 @@ def update():
     server()
 
     def update_code():
-        with cd('/var/www/rank'):
+        with cd(Directory.base):
             sudo('git pull')
-            for c in commands():
-                sudo(c)
+        sudo('cp {} {}'.format(
+            PurePosixPath(Directory.misc, 'server_config.py'),
+            PurePosixPath(Directory.misc, 'config.py')
+        ))
+        for c in commands():
+            sudo(c)
 
     execute(update_code)
 
 
 @task
 def provision():
+    local('cp {} {}'.format(
+        PurePosixPath(Directory.misc, 'test_config.py'),
+        PurePosixPath(Directory.misc, 'config.py')
+    ))
     for c in commands():
         local(c)
 
@@ -81,8 +89,12 @@ def deploy():
     def deploy_code():
         with cd('/var/www'):
             sudo('rm -rf rank')
-            sudo('git clone https://github.com/happlebao/rank.git')
-            for c in commands():
-                sudo(c)
+        sudo('git clone https://github.com/happlebao/rank.git')
+        sudo('cp {} {}'.format(
+            PurePosixPath(Directory.misc, 'server_config.py'),
+            PurePosixPath(Directory.misc, 'config.py')
+        ))
+        for c in commands():
+            sudo(c)
 
     execute(deploy_code)
