@@ -1,6 +1,9 @@
 from pyquery import PyQuery
 
-from source.exception import ErrorCode
+from source.exception import (
+    ErrorCode,
+    ErrorCode451,
+)
 from misc import config
 from source.model import Model
 from source.api import API
@@ -78,26 +81,30 @@ class Repository(Model):
                         log_error('cannot find c in repo or search timeout', self.name_with_owner)
 
     def valid_code_files(self):
-        self.add_code_files()
-        if len(self.files) < 2:
+        try:
+            self.add_code_files()
+        except ErrorCode451:
             return False
         else:
-            files = sorted(self.files, key=lambda file: file[0], reverse=True)
-            f1 = files[0]
-            f2 = files[1]
-            log('validate code <{}> <{}>'.format(files, files))
-            if f1[1] in config.invalid_language:
-                return False
-                # the top 2 type should be code instead of text
-            elif f1[0] == f2[0] and f2[1] in config.invalid_language:
+            if len(self.files) < 2:
                 return False
             else:
-                # code files shoud be at least 3
-                total = 0
-                for f in files:
-                    if f[1] not in config.invalid_language:
-                        total += f[0]
-                return total > 3
+                files = sorted(self.files, key=lambda file: file[0], reverse=True)
+                f1 = files[0]
+                f2 = files[1]
+                log('validate code <{}> <{}>'.format(files, files))
+                if f1[1] in config.invalid_language:
+                    return False
+                    # the top 2 type should be code instead of text
+                elif f1[0] == f2[0] and f2[1] in config.invalid_language:
+                    return False
+                else:
+                    # code files shoud be at least 3
+                    total = 0
+                    for f in files:
+                        if f[1] not in config.invalid_language:
+                            total += f[0]
+                    return total > 3
 
     def validate(self):
         # language may be none for some repo due to none files or other reason

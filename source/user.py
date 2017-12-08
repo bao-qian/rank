@@ -114,7 +114,7 @@ class User:
         us = list(u2) + list(u1)
         seen = set()
         for i, u in enumerate(us):
-            if u.login not in seen:
+            if u.login not in seen and u.login not in config.block_user:
                 seen.add(u.login)
                 log('user no.{} {}'.format(i, u.login))
                 cs = list(Contribution.all(u.login, u.repositories))
