@@ -248,9 +248,11 @@ class API(Database.base):
     @classmethod
     def get_crawler(cls, query):
         try:
-            c = cls._get(query)
+            m = cls._get(query)
         except NotExist:
             return cls._get_crawler(query)
         else:
-            html = c.response
-            return html
+            if cls._valid_cache(m):
+                return m.response
+            else:
+                return cls._get_crawler(query)
