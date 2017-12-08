@@ -187,8 +187,8 @@ class API(Database.base):
             j = r.json()
             cls._set(query, r.text)
             return j
-        # don't knwo when rate will be 0, so compare with 3 + thread number
-        elif rate_remaing < 3 + config.thread:
+        # don't knwo when rate will be 0, so compare with 3
+        elif rate_remaing < 3:
             log('v3 no rate remaing')
             # sleep 5 seconds more to guarantee success
             time.sleep(5 + (rate_reset - now))
