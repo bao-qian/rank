@@ -128,17 +128,14 @@ class API(Database.base):
         return q
 
     @classmethod
-    def _get_v4_cache(cls, query, force=False):
-        if force:
+    def _get_v4_cache(cls, query):
+        try:
+            c = cls._get(query)
+        except ValueError:
             return cls._get_v4(query)
         else:
-            try:
-                c = cls._get(query)
-            except ValueError:
-                return cls._get_v4(query)
-            else:
-                r = json.loads(c.response)
-                return r
+            r = json.loads(c.response)
+            return r
 
     @classmethod
     def get_v4_connection(cls, keyword, parameter, node, first, count):
@@ -164,8 +161,8 @@ class API(Database.base):
                 break
 
     @classmethod
-    def get_v4_object(cls, query, force=False):
-        return cls._get_v4_cache(query, force)
+    def get_v4_object(cls, query):
+        return cls._get_v4_cache(query)
 
     @classmethod
     def _get_v3(cls, query):
@@ -198,17 +195,14 @@ class API(Database.base):
             raise HTTPError(message, response=r)
 
     @classmethod
-    def get_v3(cls, query, force=False):
-        if force:
+    def get_v3(cls, query):
+        try:
+            c = cls._get(query)
+        except ValueError:
             return cls._get_v3(query)
         else:
-            try:
-                c = cls._get(query)
-            except ValueError:
-                return cls._get_v3(query)
-            else:
-                r = json.loads(c.response)
-                return r
+            r = json.loads(c.response)
+            return r
 
     @classmethod
     def _get_crawler(cls, query):
@@ -230,14 +224,11 @@ class API(Database.base):
             raise HTTPError(message, response=r)
 
     @classmethod
-    def get_crawler(cls, query, force=False):
-        if force:
+    def get_crawler(cls, query):
+        try:
+            c = cls._get(query)
+        except ValueError:
             return cls._get_crawler(query)
         else:
-            try:
-                c = cls._get(query)
-            except ValueError:
-                return cls._get_crawler(query)
-            else:
-                html = c.response
-                return html
+            html = c.response
+            return html
