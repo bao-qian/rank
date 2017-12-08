@@ -10,7 +10,10 @@ from sqlalchemy import (
     Integer,
 )
 
-from exception import ErrorCode202
+from exception import (
+    ErrorCode202,
+    NotExist,
+)
 from misc import (
     secret,
     config,
@@ -33,7 +36,7 @@ class API(Database.base):
             return m
         else:
             log('query not exist')
-            raise ValueError
+            raise NotExist
 
     @classmethod
     def _valid_cache(cls, m):
@@ -135,7 +138,7 @@ class API(Database.base):
     def _get_v4_cache(cls, query):
         try:
             c = cls._get(query)
-        except ValueError:
+        except NotExist:
             return cls._get_v4(query)
         else:
             r = json.loads(c.response)
@@ -206,7 +209,7 @@ class API(Database.base):
     def get_v3(cls, query):
         try:
             m = cls._get(query)
-        except ValueError:
+        except NotExist:
             try:
                 cls._get_v3(query)
             except ErrorCode202:
@@ -248,7 +251,7 @@ class API(Database.base):
     def get_crawler(cls, query):
         try:
             c = cls._get(query)
-        except ValueError:
+        except NotExist:
             return cls._get_crawler(query)
         else:
             html = c.response
