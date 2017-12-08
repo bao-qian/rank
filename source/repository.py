@@ -4,7 +4,7 @@ from requests import HTTPError
 from misc import config
 from source.model import Model
 from source.api import API
-from source.utility import log
+from source.utility import log, log_error
 
 
 class Repository(Model):
@@ -69,20 +69,21 @@ class Repository(Model):
                         files.append((count, language))
                     else:
                         # the selected language has no number count in right sidebar
-                        head = q('.codesearch-results h3').text().strip()
-                        text1 = 'code results'
-                        text2 = 'Results'
-                        if text1 in head:
-                            count = head.split(text1, 1)[0].replace(',', '')
+                        head = q('.codesearch-results h3').text().replace(' ', '').replace('\n', '').replace(',', '')
+                        text1 = f'code results in {self.name_with_owner}'.replace(' ', '')
+                        text2 = f'Results in {self.name_with_owner}'.replace(' ', '')
+                        if head[-len(text1):] == text1:
+                            count = head[:len(head) - len(text1)]
                             count = int(count)
                             language = 'C'
                             files.append((count, language))
-                        elif text2 in head:
+                        elif text2 == head:
                             count = len(q('.code-list-item'))
                             language = 'C'
                             files.append((count, language))
                         else:
-                            log('cannot find c in repo', self.name_with_owner)
+                            # https://help.github.com/articles/troubleshooting-search-queries/
+                            log_error('cannot find c in repo or search timeout', self.name_with_owner)
 
                 if len(files) > 1:
                     files = sorted(files, key=lambda file: file[0], reverse=True)
