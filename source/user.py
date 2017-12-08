@@ -101,7 +101,6 @@ class User:
             except ErrorCode:
                 yield from []
             else:
-                log('users_for_extra', r)
                 node = r['data']['user']
                 print('users for extra <{}>'.format(node['name']))
                 u = User(node)
