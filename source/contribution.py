@@ -1,6 +1,6 @@
 import time
 
-from exception import ErrorCode
+from source.exception import ErrorCode
 from misc import config
 from source.model import Model
 from source.repository import Repository
