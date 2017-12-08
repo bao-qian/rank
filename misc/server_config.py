@@ -25,6 +25,10 @@ extra_user = [
     'rebornix',
 ]
 
+block_user = [
+    'diwu',
+]
+
 root = os.path.dirname(os.path.dirname(__file__))
 static = os.path.join(root, 'static')
 misc = os.path.join(root, 'misc')
