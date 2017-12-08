@@ -99,7 +99,7 @@ class Repository(Model):
                         total += f[0]
                 return total > 3
 
-    def validate_code(self):
+    def validate(self):
         # language may be none for some repo due to none files or other reason
         if self.language is None or self.language in config.invalid_language or self.start_count == 0:
             self.valid = False
