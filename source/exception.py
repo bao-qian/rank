@@ -1,4 +1,4 @@
-from utility import log_error
+from source.utility import log_error
 
 
 class NotExist(Exception):
