@@ -1,6 +1,6 @@
 from pyquery import PyQuery
-from requests import HTTPError
 
+from exception import ErrorCode
 from misc import config
 from source.model import Model
 from source.api import API
@@ -48,7 +48,7 @@ class Repository(Model):
         query = '/{}/search?l=c'.format(self.name_with_owner)
         try:
             html = API.get_crawler(query)
-        except HTTPError:
+        except ErrorCode:
             self.valid = False
             self.all_invalid.append((self.name_with_owner, self.start_count, self.language))
         else:
