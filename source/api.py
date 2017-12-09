@@ -128,7 +128,7 @@ class API(Database.base):
             raise ErrorCode(r.status_code, query)
 
     @classmethod
-    def query_for_connection(cls, query, parameter, edge):
+    def _query_for_connection(cls, query, parameter, edge):
         parameter_string = ""
         for k, v in parameter.items():
             # type is enum, so no double quote
@@ -170,7 +170,7 @@ class API(Database.base):
 
     @classmethod
     def get_v4_connection(cls, query, keyword, parameter, edge):
-        q = cls.query_for_connection(query, parameter, edge)
+        q = cls._query_for_connection(query, parameter, edge)
         r = cls._get_v4_cache(q)
         c = cls._connection_for_keyword(r['data'], keyword)
         nodes = c['edges']
@@ -183,7 +183,7 @@ class API(Database.base):
                 has_next_page = c['pageInfo']['hasNextPage']
                 if end_cursor is not None or has_next_page:
                     parameter['after'] = end_cursor
-                    q = cls.query_for_connection(query, parameter, edge)
+                    q = cls._query_for_connection(query, parameter, edge)
                     r = cls._get_v4_cache(q)
                     c = cls._connection_for_keyword(r['data'], keyword)
                     nodes = c['edges']
