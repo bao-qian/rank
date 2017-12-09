@@ -1,3 +1,4 @@
+# noinspection PyUnresolvedReferences
 from misc.base_config import *
 
 user_query_and_count = [
