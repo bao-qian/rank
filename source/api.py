@@ -62,6 +62,28 @@ class API(Database.base):
         Database.session.commit()
 
     @classmethod
+    def _check_rate_v4(cls, response):
+        rate_limit = response['data']['rateLimit']
+        limit = rate_limit['limit']
+        remaining = rate_limit['remaining']
+        cost = rate_limit['cost']
+        reset_at = rate_limit['resetAt']
+        log('v4 rate limit <{}> remaing <{}> cost <{}> resetAt <{}>'.format(
+            limit, remaining, cost, reset_at)
+        )
+        time_format = '%Y-%m-%dT%H:%M:%SZ'
+        reset_at = int(datetime.datetime.strptime(reset_at, time_format).timestamp())
+        now = int(time.time())
+        log('v4 rate will reset in <{}>'.format(reset_at - now))
+
+        # don't knwo when rate will be 0, so compare with 3
+        if remaining < 3:
+            log('v4 no rate remaing')
+            # sleep 5 seconds more to guarantee success
+            time.sleep(5 + (reset_at - now))
+            log('v4 finish sleep')
+
+    @classmethod
     def _get_v4(cls, query):
         full_query = f"""
         {{
@@ -86,25 +108,8 @@ class API(Database.base):
             if 'errors' in j:
                 raise GraphQLError(j['errors'])
             else:
-                rate_limit = j['data']['rateLimit']
-                limit = rate_limit['limit']
-                remaining = rate_limit['remaining']
-                cost = rate_limit['cost']
-                reset_at = rate_limit['resetAt']
-                log('v4 rate limit <{}> remaing <{}> cost <{}> resetAt <{}>'.format(
-                    limit, remaining, cost, reset_at)
-                )
-                time_format = '%Y-%m-%dT%H:%M:%SZ'
-                reset_at = int(datetime.datetime.strptime(reset_at, time_format).timestamp())
-                now = int(time.time())
-                log('v4 rate will reset in <{}>'.format(reset_at - now))
-
-                # don't knwo when rate will be 0, so compare with 3
-                if remaining < 3:
-                    log('v4 no rate remaing')
-                    # sleep 5 seconds more to guarantee success
-                    time.sleep(5 + (reset_at - now))
                 cls._set(query, r.text)
+                cls._check_rate_v4(j)
                 return j
         else:
             raise ErrorCode(r.status_code, query)
@@ -176,6 +181,21 @@ class API(Database.base):
         return cls._get_v4_cache(query)
 
     @classmethod
+    def _check_rate_v3(cls, response):
+        rate_limit = int(response.headers['X-RateLimit-Limit'])
+        rate_reset = int(response.headers['X-RateLimit-Reset'])
+        rate_remaing = int(response.headers['X-RateLimit-Remaining'])
+        log('v3 rate limit <{}> rate remaing <{}>'.format(rate_limit, rate_remaing))
+        now = int(time.time())
+        log('v3 rate will reset in <{}>'.format(rate_reset - now))
+
+        if rate_remaing < 3:
+            log('v3 no rate remaing')
+            # sleep 5 seconds more to guarantee success
+            time.sleep(5 + (rate_reset - now))
+            log('v3 finish sleep and try again')
+
+    @classmethod
     def _get_v3(cls, query):
         base = 'https://api.github.com'
         url = '{}{}'.format(base, query)
@@ -183,25 +203,15 @@ class API(Database.base):
         headers = {'Authorization': 'bearer {}'.format(secret.token)}
         r = requests.get(url=url, headers=headers)
 
-        rate_limit = int(r.headers['X-RateLimit-Limit'])
-        rate_reset = int(r.headers['X-RateLimit-Reset'])
-        rate_remaing = int(r.headers['X-RateLimit-Remaining'])
-        log('v3 rate limit <{}> rate remaing <{}>'.format(rate_limit, rate_remaing))
-        now = int(time.time())
-        log('v3 rate will reset in <{}>'.format(rate_reset - now))
-
         if r.status_code == 200:
             log('get v3 r', r)
             j = r.json()
             cls._set(query, r.text)
+            cls._check_rate_v3(r)
             return j
         elif r.status_code == 202:
             raise ErrorCode202(202, query)
         # don't knwo when rate will be 0, so compare with 3
-        elif rate_remaing < 3:
-            log('v3 no rate remaing')
-            # sleep 5 seconds more to guarantee success
-            time.sleep(5 + (rate_reset - now))
         else:
             raise ErrorCode(r.status_code, query)
 
