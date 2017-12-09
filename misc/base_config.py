@@ -28,6 +28,8 @@ invalid_language = [
 invalid_description = [
     'interview',
     'tutorial',
+    'self-taught',
+    'self taught',
     'study',
     'tips',
     '学习笔记',
@@ -36,6 +38,7 @@ invalid_description = [
     '开发实战',
     '交流群',
     '学习群',
+    '自学',
     '实战',
     '精华',
     '入门',
