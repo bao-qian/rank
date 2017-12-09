@@ -29,7 +29,6 @@ class Contribution(Model):
             cs = []
 
         # only for last x year
-        past = int(time.time()) - int(365 * 24 * 3600 * config.contribution_year)
         for c in cs:
             author = c['author']
             # https://api.github.com/repos/iview/iview/stats/contributors
@@ -39,14 +38,14 @@ class Contribution(Model):
                 weeks = c['weeks']
                 for w in weeks:
                     week_start = int(w['w'])
-                    if week_start > past and w['c'] > 0:
+                    if week_start > config.valid_from and w['c'] > 0:
                         self.total_commit += w['c']
                         if _login == self.login:
                             self.commit += w['c']
 
     def add_star(self):
         self.rate = self.commit / self.total_commit
-        self.star = int(self.repository.start_count * self.rate)
+        self.star = int(self.repository.total_start * self.rate)
 
     def validate(self):
         self.repository.validate()
@@ -61,7 +60,9 @@ class Contribution(Model):
             else:
                 self.valid = False
 
-            if not self.valid:
+            if self.valid:
+                self.repository.add_starred_at()
+            else:
                 self.all_invalid.append(
                     (self.repository.name_with_owner, self.commit, self.total_commit)
                 )

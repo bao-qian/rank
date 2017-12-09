@@ -9,6 +9,7 @@ user_query_and_count = [
 count_per_request = 100
 cache_time = 86400
 contribution_year = 3
+past = int(time.time()) - int(365 * 24 * 3600 * contribution_year)
 
 extra_user = [
     'guaxiao',
