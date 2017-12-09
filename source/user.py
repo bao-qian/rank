@@ -30,7 +30,7 @@ class User:
         self.star = 0
 
     @classmethod
-    def filed_user(cls):
+    def query_filed(cls):
         r1 = Repository.query_pinned()
         r2 = Repository.query_popular()
         q = f"""
@@ -48,7 +48,7 @@ class User:
         return q
 
     @classmethod
-    def query_connection_for_users(cls):
+    def query_connection(cls):
         q = """
             search({}) {{
                 {}
@@ -60,8 +60,8 @@ class User:
         return q
 
     @classmethod
-    def query_edge_for_user(cls):
-        f = cls.filed_user()
+    def query_edge(cls):
+        f = cls.query_filed()
         edge = f"""
             node {{
                 ... on User {{
@@ -72,8 +72,8 @@ class User:
         return edge
 
     @classmethod
-    def query_object_for_user(cls, user):
-        f = cls.filed_user()
+    def query_object(cls, user):
+        f = cls.query_filed()
         q = f"""
             user(login: "{user}") {{
                 {f}
@@ -83,8 +83,8 @@ class User:
 
     @classmethod
     def users_for_query(cls, user_query, count):
-        query = cls.query_connection_for_users()
-        edge = cls.query_edge_for_user()
+        query = cls.query_connection()
+        edge = cls.query_edge()
         parameter = {
             'query': user_query,
             'type': 'USER',
@@ -106,7 +106,7 @@ class User:
     @classmethod
     def users_for_extra(cls):
         for e in config.extra_user:
-            q = User.query_object_for_user(e)
+            q = User.query_object(e)
             log('query', q)
             try:
                 r = API.get_v4_object(q)
