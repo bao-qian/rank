@@ -21,7 +21,11 @@ from misc import (
     config,
 )
 from source.database import Database
-from source.utility import log, log_error
+from source.utility import (
+    log,
+    log_error,
+    ensure_not_none,
+)
 
 
 class API(Database.base):
@@ -105,6 +109,7 @@ class API(Database.base):
 
         if r.status_code == 200:
             j = r.json()
+            ensure_not_none(j, f'query <{query}> result is <{j}>')
             if 'errors' in j:
                 raise GraphQLError(j['errors'])
             else:
@@ -206,6 +211,7 @@ class API(Database.base):
         if r.status_code == 200:
             log('get v3 r', r)
             j = r.json()
+            ensure_not_none(j, f'query <{query}> result is <{j}>')
             cls._set(query, r.text)
             cls._check_rate_v3(r)
             return j

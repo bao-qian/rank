@@ -7,6 +7,10 @@ class NotExist(Exception):
     pass
 
 
+class NoneError(Exception):
+    pass
+
+
 class GraphQLError(Exception):
     def __init__(self, errors):
         message = json.dumps(errors)

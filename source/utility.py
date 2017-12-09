@@ -2,6 +2,8 @@ import json
 
 import time
 
+from source.exception import NoneError
+
 
 def log(*args, **kwargs):
     time_format = '%H:%M:%S'
@@ -16,3 +18,12 @@ def log_error(*args, **kwargs):
 
 def log_dict(data):
     print(json.dumps(data, indent=4))
+
+
+def ensure_not_none(data, message):
+    valid = data is not None
+    valid = valid and data is not [None]
+    valid = valid and data is not {None}
+    valid = valid and data is not {None: None}
+    if not valid:
+        raise NoneError(message)
