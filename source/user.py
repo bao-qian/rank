@@ -119,7 +119,7 @@ class User:
                 return
             else:
                 node = r['data']['user']
-                print('users for extra <{}>'.format(node['name']))
+                log('users for extra <{}>'.format(node['name']))
                 u = User(node)
                 yield u
 
