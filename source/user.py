@@ -82,26 +82,22 @@ class User:
         return q
 
     @classmethod
-    def users_for_query(cls, user_query, count):
-        query = cls.query_connection()
-        edge = cls.query_edge()
-        parameter = {
-            'query': user_query,
-            'type': 'USER',
-        }
-        nodes = API.get_v4_connection(
-            query, ['search'], parameter, edge, config.count_per_request, count
-        )
+    def users_for_query(cls):
+        for user_query, count in config.user_query_and_count:
+            query = cls.query_connection()
+            edge = cls.query_edge()
+            parameter = {
+                'query': user_query,
+                'type': 'USER',
+            }
+            nodes = API.get_v4_connection(
+                query, ['search'], parameter, edge, config.count_per_request, count
+            )
 
-        for query in nodes:
-            n = query['node']
-            log('users_from_nodes <{}>'.format(n['name']))
-            yield User(n)
-
-    @classmethod
-    def users_for_queries(cls):
-        for q, c in config.user_query_and_count:
-            yield from User.users_for_query(q, c)
+            for query in nodes:
+                n = query['node']
+                log('users_from_nodes <{}>'.format(n['name']))
+                yield User(n)
 
     @classmethod
     def users_for_extra(cls):
@@ -111,7 +107,7 @@ class User:
             try:
                 r = API.get_v4_object(q)
             except ErrorCode:
-                yield from []
+                return
             else:
                 node = r['data']['user']
                 print('users for extra <{}>'.format(node['name']))
@@ -121,7 +117,7 @@ class User:
     @classmethod
     def all(cls):
         u2 = cls.users_for_extra()
-        u1 = cls.users_for_queries()
+        u1 = cls.users_for_query()
         us = list(u2) + list(u1)
         seen = set()
         for i, u in enumerate(us):
