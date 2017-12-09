@@ -181,15 +181,15 @@ class API(Database.base):
             if should_continue:
                 end_cursor = c['pageInfo']['endCursor']
                 has_next_page = c['pageInfo']['hasNextPage']
-                if end_cursor is None or not has_next_page:
-                    return
-                else:
+                if end_cursor is not None or has_next_page:
                     parameter['after'] = end_cursor
                     q = cls.query_for_connection(query, parameter, edge)
                     r = cls._get_v4_cache(q)
                     c = cls._connection_for_keyword(r['data'], keyword)
                     nodes = c['edges']
                     yield nodes
+                else:
+                    return
             else:
                 return
 
