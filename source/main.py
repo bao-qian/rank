@@ -21,9 +21,6 @@ def all_data():
 
 
 def log_data(users):
-    for u in users:
-        log('user stat <{}> <{}> <{}>'.format(len(u.repositories), u.name, u.url))
-
     for r in Repository.all_invalid:
         log('invalid repository', r)
     for c in Contribution.all_invalid:
