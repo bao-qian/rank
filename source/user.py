@@ -133,7 +133,7 @@ class User:
             if u.login not in seen and u.login not in config.block_user:
                 seen.add(u.login)
                 log('user no.{} {}'.format(i, u.login))
-                cs = list(Contribution.all(u.login, u.repositories))
+                cs = Contribution.all(u.login, u.repositories)
                 u.contribution = sorted(cs, key=lambda c: c.star, reverse=True)
                 u.star = sum([c.star for c in u.contribution])
                 if u.star > 0:
