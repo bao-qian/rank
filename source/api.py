@@ -128,7 +128,7 @@ class API(Database.base):
             raise ErrorCode(r.status_code, query)
 
     @classmethod
-    def _query_for_connection(cls, query, parameter, edge):
+    def _query_for_connection(cls, query, parameter, format_mapping):
         parameter_string = ""
         for k, v in parameter.items():
             # type is enum, so no double quote
@@ -146,7 +146,11 @@ class API(Database.base):
             }
             """
         log(query)
-        q = query.format(parameter_string, page_info, edge)
+        q = query.format(
+            parameter=parameter_string,
+            page_info=page_info,
+            **format_mapping,
+        )
         return q
 
     @classmethod
@@ -169,8 +173,8 @@ class API(Database.base):
         return c
 
     @classmethod
-    def get_v4_connection(cls, query, keyword, parameter, edge):
-        q = cls._query_for_connection(query, parameter, edge)
+    def get_v4_connection(cls, query, keyword, parameter, format_mapping):
+        q = cls._query_for_connection(query, parameter, format_mapping)
         r = cls._get_v4_cache(q)
         c = cls._connection_for_keyword(r['data'], keyword)
         nodes = c['edges']
@@ -183,7 +187,7 @@ class API(Database.base):
                 has_next_page = c['pageInfo']['hasNextPage']
                 if end_cursor is not None or has_next_page:
                     parameter['after'] = end_cursor
-                    q = cls._query_for_connection(query, parameter, edge)
+                    q = cls._query_for_connection(query, parameter, format_mapping)
                     r = cls._get_v4_cache(q)
                     c = cls._connection_for_keyword(r['data'], keyword)
                     nodes = c['edges']

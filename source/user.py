@@ -50,10 +50,10 @@ class User:
     @classmethod
     def query_connection(cls):
         q = """
-            search({}) {{
-                {}
+            search({parameter}) {{
+                {page_info}
                 edges {{
-                    {}
+                    {edge}
                 }}
             }}
         """
@@ -86,6 +86,9 @@ class User:
         for user_query, count in config.user_query_and_count:
             query = cls.query_connection()
             edge = cls.query_edge()
+            format_mapping = dict(
+                edge=edge,
+            )
             parameter = {
                 'query': user_query,
                 'type': 'USER',
@@ -93,7 +96,7 @@ class User:
             }
 
             edges = API.get_v4_connection(
-                query, ['search'], parameter, edge,
+                query, ['search'], parameter, format_mapping,
             )
 
             for e in edges:
