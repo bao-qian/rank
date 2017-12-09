@@ -20,6 +20,7 @@ class Contribution(Model):
         self.login = login
         self.valid = False
         self.part = 4
+        self.interval_length = (config.contribution_year * 365 * 24 * 3600) // 4
         self.commit_parts = [[0, 0] for _ in range(self.part)]
         self.star_pats = [0] * self.part
 
@@ -41,8 +42,7 @@ class Contribution(Model):
                 weeks = c['weeks']
                 weeks = sorted(weeks, key=lambda _w: _w['w'], reverse=True)
 
-                time_part = (int(time.time()) - config.valid_from) // self.part
-                until = int(time.time()) - time_part
+                until = int(time.time()) - self.interval_length
                 i = 0
 
                 for w in weeks:
@@ -53,7 +53,7 @@ class Contribution(Model):
                             self.commit_parts[i][0] += w['c']
                         if week_start < until:
                             i = i + 1
-                            until = until - time_part
+                            until = until - self.interval_length
                     else:
                         break
 
@@ -69,8 +69,7 @@ class Contribution(Model):
             return False
 
     def add_star(self):
-        time_part = (int(time.time()) - config.valid_from) // self.part
-        until = int(time.time()) - time_part
+        until = int(time.time()) - self.interval_length
         i = 0
 
         for s in self.repository.starred_at:
@@ -78,7 +77,7 @@ class Contribution(Model):
                 self.star_pats[i] += 1
                 if s < until:
                     i = i + 1
-                    until = until - time_part
+                    until = until - self.interval_length
             else:
                 break
 

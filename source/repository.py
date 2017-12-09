@@ -1,3 +1,4 @@
+import time
 from pyquery import PyQuery
 
 from source.exception import (
@@ -211,7 +212,8 @@ class Repository(Model):
                 unix_time = unixtime_from_api_v4(utc_string)
                 self.starred_at.append(unix_time)
 
-            should_continues = unix_time > config.valid_from
+            valid_from = int(time.time()) - int(365 * 24 * 3600 * config.contribution_year)
+            should_continues = unix_time > valid_from
             try:
                 edges = connection.send(should_continues)
             except StopIteration:
