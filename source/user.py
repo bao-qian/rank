@@ -30,59 +30,71 @@ class User:
         self.star = 0
 
     @classmethod
-    def query_users(cls):
+    def filed_user(cls):
         r1 = Repository.query_pinned()
         r2 = Repository.query_popular()
         q = f"""
-            ... on User {{
-                login
-                name
-                url
-                avatarUrl
-                followers {{
-                    totalCount
-                }}
-                location
-                {r1}
-                {r2}
+            login
+            name
+            url
+            avatarUrl
+            followers {{
+                totalCount
             }}
+            location
+            {r1}
+            {r2}
             """
         return q
 
     @classmethod
-    def query_user(cls, user):
-        r1 = Repository.query_pinned()
-        r2 = Repository.query_popular()
+    def query_connection_for_users(cls):
+        q = """
+            search({}) {{
+                {}
+                edges {{
+                    {}
+                }}
+            }}
+        """
+        return q
+
+    @classmethod
+    def query_edge_for_user(cls):
+        f = cls.filed_user()
+        edge = f"""
+            node {{
+                ... on User {{
+                    {f}
+                }}
+            }}
+        """
+        return edge
+
+    @classmethod
+    def query_object_for_user(cls, user):
+        f = cls.filed_user()
         q = f"""
             user(login: "{user}") {{
-                login
-                name
-                url
-                avatarUrl
-                followers {{
-                    totalCount
-                }}
-                location
-                {r1}
-                {r2}
+                {f}
             }}
             """
         return q
 
     @classmethod
-    def users_for_query(cls, query, count):
-        node = User.query_users()
-        log('query', node)
+    def users_for_query(cls, user_query, count):
+        query = cls.query_connection_for_users()
+        edge = cls.query_edge_for_user()
         parameter = {
-            'query': query,
+            'query': user_query,
             'type': 'USER',
         }
         nodes = API.get_v4_connection(
-            'search', parameter, node, config.count_per_request, count
+            query, ['search'], parameter, edge, config.count_per_request, count
         )
 
-        for node in nodes:
-            n = node['node']
+        for query in nodes:
+            n = query['node']
             log('users_from_nodes <{}>'.format(n['name']))
             yield User(n)
 
@@ -94,7 +106,7 @@ class User:
     @classmethod
     def users_for_extra(cls):
         for e in config.extra_user:
-            q = User.query_user(e)
+            q = User.query_object_for_user(e)
             log('query', q)
             try:
                 r = API.get_v4_object(q)
@@ -124,5 +136,5 @@ class User:
                     for c in cs:
                         k = c.repository.language
                         ls[k] = ls.get(k, 0) + c.star
-                    u.language = sorted(ls.items(), key=lambda i: i[1], reverse=True)
+                    u.language = sorted(ls.items(), key=lambda l: l[1], reverse=True)
                     yield u

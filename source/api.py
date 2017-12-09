@@ -11,6 +11,7 @@ from sqlalchemy import (
 
 from source.exception import (
     NotExist,
+    NoneError,
     ErrorCode,
     ErrorCode202,
     ErrorCode451,
@@ -23,8 +24,6 @@ from misc import (
 from source.database import Database
 from source.utility import (
     log,
-    log_error,
-    ensure_not_none,
 )
 
 
@@ -65,6 +64,15 @@ class API(Database.base):
         Database.session.merge(c)
         Database.session.commit()
 
+    @staticmethod
+    def ensure_not_none(data, message):
+        valid = data is not None
+        valid = valid and data is not [None]
+        valid = valid and data is not {None}
+        valid = valid and data is not {None: None}
+        if not valid:
+            raise NoneError(message)
+
     @classmethod
     def _check_rate_v4(cls, response):
         rate_limit = response['data']['rateLimit']
@@ -73,8 +81,8 @@ class API(Database.base):
         cost = rate_limit['cost']
         reset_at = rate_limit['resetAt']
         log('v4 rate limit <{}> remaing <{}> cost <{}> resetAt <{}>'.format(
-            limit, remaining, cost, reset_at)
-        )
+            limit, remaining, cost, reset_at
+        ))
         time_format = '%Y-%m-%dT%H:%M:%SZ'
         reset_at = int(datetime.datetime.strptime(reset_at, time_format).timestamp())
         now = int(time.time())
@@ -109,9 +117,9 @@ class API(Database.base):
 
         if r.status_code == 200:
             j = r.json()
-            ensure_not_none(j, f'query <{query}> result is <{j}>')
+            cls.ensure_not_none(j, f'query <{query}> result is <{j}>')
             if 'errors' in j:
-                raise GraphQLError(j['errors'])
+                raise GraphQLError(full_query, j['errors'])
             else:
                 cls._set(query, r.text)
                 cls._check_rate_v4(j)
@@ -120,7 +128,7 @@ class API(Database.base):
             raise ErrorCode(r.status_code, query)
 
     @classmethod
-    def query_for_connection(cls, keyword, parameter, node):
+    def query_for_connection(cls, query, parameter, edge):
         parameter_string = ""
         for k, v in parameter.items():
             # type is enum, so no double quote
@@ -129,21 +137,16 @@ class API(Database.base):
             else:
                 parameter_string += f'{k}: {v} '
 
-        q = f"""
-            {keyword}({parameter_string}) {{
-                pageInfo {{
-                  endCursor
-                  hasNextPage
-                  hasPreviousPage
-                  startCursor
-                }}
-                edges {{
-                    node {{
-                        {node}
-                    }}
-                }}
-            }}
-        """
+        page_info = """
+            pageInfo {
+                endCursor
+                hasNextPage
+                hasPreviousPage
+                startCursor
+            }
+            """
+        log(query)
+        q = query.format(parameter_string, page_info, edge)
         return q
 
     @classmethod
@@ -159,25 +162,32 @@ class API(Database.base):
                 return cls._get_v4(query)
 
     @classmethod
-    def get_v4_connection(cls, keyword, parameter, node, first, count):
+    def _connection_for_keyword(cls, response, keyword):
+        c = response
+        for k in keyword:
+            c = c[k]
+        return c
+
+    @classmethod
+    def get_v4_connection(cls, query, keyword, parameter, edge, first, count):
         parameter['first'] = first
-        q = cls.query_for_connection(keyword, parameter, node)
+        q = cls.query_for_connection(query, parameter, edge)
         r = cls._get_v4_cache(q)
-        s = r['data'][keyword]
-        nodes = s['edges']
+        c = cls._connection_for_keyword(r['data'], keyword)
+        nodes = c['edges']
         yield from nodes
-        end_cursor = s['pageInfo']['endCursor']
+        end_cursor = c['pageInfo']['endCursor']
 
         steps = count // first
         for i in range(steps - 1):
             parameter['after'] = end_cursor
-            q = cls.query_for_connection(keyword, parameter, node)
+            q = cls.query_for_connection(query, parameter, edge)
             r = cls._get_v4_cache(q)
-            s = r['data'][keyword]
-            nodes = s['edges']
+            c = cls._connection_for_keyword(r['data'], keyword)
+            nodes = c['edges']
             yield from nodes
-            end_cursor = s['pageInfo']['endCursor']
-            has_next_page = s['pageInfo']['hasNextPage']
+            end_cursor = c['pageInfo']['endCursor']
+            has_next_page = c['pageInfo']['hasNextPage']
             if end_cursor is None or not has_next_page:
                 break
 
@@ -211,7 +221,7 @@ class API(Database.base):
         if r.status_code == 200:
             log('get v3 r', r)
             j = r.json()
-            ensure_not_none(j, f'query <{query}> result is <{j}>')
+            cls.ensure_not_none(j, f'query <{query}> result is <{j}>')
             cls._set(query, r.text)
             cls._check_rate_v3(r)
             return j

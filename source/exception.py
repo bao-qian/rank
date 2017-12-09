@@ -12,11 +12,12 @@ class NoneError(Exception):
 
 
 class GraphQLError(Exception):
-    def __init__(self, errors):
-        message = json.dumps(errors)
+    def __init__(self, query, errors):
+        message = f'query <{query}> for error <{json.dumps(errors)}>'
         log_error(message)
         super().__init__(message)
         self.errors = errors
+        self.query = query
 
 
 class ErrorCode(Exception):
