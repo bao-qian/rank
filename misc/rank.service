@@ -8,7 +8,7 @@ WorkingDirectory=/var/www/rank
 ExecStart=/usr/bin/python3.6 -m source.main
 # don't kill crawler due to timeout
 TimeoutStartSec=infinity
-# wait 10 seconds before restart
-RestartSec=10
+# wait 10 minutes before restart
+RestartSec=600
 # auto restart due to unknown exception e.g. network failure
 Restart=on-failure
