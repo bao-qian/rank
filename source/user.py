@@ -89,15 +89,24 @@ class User:
             parameter = {
                 'query': user_query,
                 'type': 'USER',
+                'first': config.count_per_request,
             }
-            nodes = API.get_v4_connection(
-                query, ['search'], parameter, edge, config.count_per_request, count
+
+            edges = API.get_v4_connection(
+                query, ['search'], parameter, edge,
             )
 
-            for query in nodes:
-                n = query['node']
-                log('users_from_nodes <{}>'.format(n['name']))
-                yield User(n)
+            for e in edges:
+                for n in e:
+                    n = n['node']
+                    log('users_from_nodes <{}>'.format(n['name']))
+                    yield User(n)
+
+                    if count == 0:
+                        edges.send(False)
+                    else:
+                        count = count - config.count_per_request
+                        edges.send(True)
 
     @classmethod
     def users_for_extra(cls):

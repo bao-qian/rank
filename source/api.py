@@ -169,27 +169,31 @@ class API(Database.base):
         return c
 
     @classmethod
-    def get_v4_connection(cls, query, keyword, parameter, edge, first, count):
-        parameter['first'] = first
+    def get_v4_connection(cls, query, keyword, parameter, edge):
         q = cls.query_for_connection(query, parameter, edge)
         r = cls._get_v4_cache(q)
         c = cls._connection_for_keyword(r['data'], keyword)
         nodes = c['edges']
-        yield from nodes
-        end_cursor = c['pageInfo']['endCursor']
+        yield nodes
 
-        steps = count // first
-        for i in range(steps - 1):
-            parameter['after'] = end_cursor
-            q = cls.query_for_connection(query, parameter, edge)
-            r = cls._get_v4_cache(q)
-            c = cls._connection_for_keyword(r['data'], keyword)
-            nodes = c['edges']
-            yield from nodes
-            end_cursor = c['pageInfo']['endCursor']
-            has_next_page = c['pageInfo']['hasNextPage']
-            if end_cursor is None or not has_next_page:
-                break
+        while True:
+            should_continue = yield
+            if should_continue:
+                end_cursor = c['pageInfo']['endCursor']
+                has_next_page = c['pageInfo']['hasNextPage']
+                if end_cursor is None or not has_next_page:
+                    return
+                else:
+                    parameter['after'] = end_cursor
+                    q = cls.query_for_connection(query, parameter, edge)
+                    r = cls._get_v4_cache(q)
+                    c = cls._connection_for_keyword(r['data'], keyword)
+                    nodes = c['edges']
+                    yield nodes
+            else:
+                return
+
+
 
     @classmethod
     def get_v4_object(cls, query):
