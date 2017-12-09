@@ -1,6 +1,5 @@
 # noinspection PyUnresolvedReferences
 from misc.base_config import *
-import time
 
 user_query_and_count = [
     ('location:china followers:>200', 1000),

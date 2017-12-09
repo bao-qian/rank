@@ -1,6 +1,5 @@
 # noinspection PyUnresolvedReferences
 from misc.base_config import *
-import time
 
 
 user_query_and_count = [
