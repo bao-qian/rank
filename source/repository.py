@@ -215,7 +215,7 @@ class Repository(Model):
 
             should_continues = unix_time > config.valid_from
             try:
-                connection.send(should_continues)
+                edges = connection.send(should_continues)
             except StopIteration:
                 connection.close()
                 return

@@ -19,6 +19,9 @@ class Contribution(Model):
         self.rate = 0
         self.login = login
         self.valid = False
+        self.part = 4
+        self.commit_parts = [[0, 0] for _ in range(self.part)]
+        self.star_pats = [0] * self.part
 
     def add_commit(self):
         q = Repository.query_for_contributors(self.repository.name_with_owner)
@@ -36,22 +39,54 @@ class Contribution(Model):
             if author is not None:
                 _login = c['author']['login']
                 weeks = c['weeks']
+                weeks = sorted(weeks, key=lambda _w: _w['w'], reverse=True)
+
+                time_part = (int(time.time()) - config.valid_from) // self.part
+                until = int(time.time()) - time_part
+                i = 0
+
                 for w in weeks:
                     week_start = int(w['w'])
-                    if week_start > config.valid_from and w['c'] > 0:
-                        self.total_commit += w['c']
+                    if i < self.part:
+                        self.commit_parts[i][1] += w['c']
                         if _login == self.login:
-                            self.commit += w['c']
+                            self.commit_parts[i][0] += w['c']
+                        if week_start < until:
+                            i = i + 1
+                            until = until - time_part
+                    else:
+                        break
 
     def valid_commit(self):
         self.add_commit()
         # at least x commit
-        if self.login == self.repository.owner and self.commit > 3:
+        commit = sum([p[0] for p in self.commit_parts])
+        if self.login == self.repository.owner and commit > 3:
             return True
-        elif self.login != self.repository.owner and self.commit > 1:
+        elif self.login != self.repository.owner and commit > 1:
             return True
         else:
             return False
+
+    def add_star(self):
+        time_part = (int(time.time()) - config.valid_from) // self.part
+        until = int(time.time()) - time_part
+        i = 0
+
+        for s in self.repository.starred_at:
+            if i < self.part:
+                self.star_pats[i] += 1
+                if s < until:
+                    i = i + 1
+                    until = until - time_part
+            else:
+                break
+
+        for i in range(config.contribution_year):
+            c = self.commit_parts[i]
+            if c[1] > 0:
+                rate = c[0] / c[1]
+                self.star += int(self.star_pats[i] * rate)
 
     def validate(self):
         self.repository.validate()
@@ -73,15 +108,11 @@ class Contribution(Model):
                     (self.repository.name_with_owner, self.commit, self.total_commit)
                 )
 
-    def add_star(self):
-        self.rate = self.commit / self.total_commit
-        self.star = int(len(self.repository.starred_at) * self.rate)
-
     @classmethod
     def all(cls, login, repositories):
         for r in repositories:
             c = Contribution(login, r)
             c.validate()
-            log('contribution all', r.name_with_owner, c.valid, c.star)
+            log('contribution all', login, r.name_with_owner, c.valid, c.star, c.commit_parts, c.star_pats)
             if c.valid:
                 yield c

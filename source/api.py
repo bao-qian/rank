@@ -191,7 +191,6 @@ class API(Database.base):
                 c = cls._connection_for_keyword(r['data'], keyword)
                 edges = c['edges']
                 should_continue = yield edges
-                log('should_continue', should_continue)
             else:
                 return
 
