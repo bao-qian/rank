@@ -193,8 +193,6 @@ class API(Database.base):
             else:
                 return
 
-
-
     @classmethod
     def get_v4_object(cls, query):
         return cls._get_v4_cache(query)
