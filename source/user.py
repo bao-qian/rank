@@ -103,7 +103,6 @@ class User:
             while True:
                 for e in edges:
                     e = e['node']
-                    log('users_from_nodes <{}>'.format(e['name']))
                     yield User(e)
 
                 count = count - config.count_per_request
@@ -118,14 +117,12 @@ class User:
     def users_for_extra(cls):
         for e in config.extra_user:
             q = User.query_object(e)
-            log('query', q)
             try:
                 r = API.get_v4_object(q)
             except ErrorCode:
                 return
             else:
                 node = r['data']['user']
-                log('users for extra <{}>'.format(node['name']))
                 u = User(node)
                 yield u
 
@@ -138,7 +135,7 @@ class User:
         for i, u in enumerate(us):
             if u.login not in seen and u.login not in config.block_user:
                 seen.add(u.login)
-                log('user no.{} {} {}'.format(i, u.login, len(u.repositories)))
+                log('start user no.{} {} {}'.format(i, u.login, len(u.repositories)))
                 cs = Contribution.all(u.login, u.repositories)
                 u.contribution = sorted(cs, key=lambda c: c.star, reverse=True)
                 u.star = sum([c.star for c in u.contribution])
@@ -148,4 +145,5 @@ class User:
                         k = c.repository.language
                         ls[k] = ls.get(k, 0) + c.star
                     u.language = sorted(ls.items(), key=lambda l: l[1], reverse=True)
+                    log('end user no.{} {} {}'.format(i, u.login, u.language))
                     yield u

@@ -90,11 +90,11 @@ class Contribution(Model):
 
     def validate(self):
         self.repository.validate()
+        log('repo {} {} {} {}'.format(
+            self.repository.name_with_owner, self.repository.total_start, self.repository.valid, self.repository.files
+        ))
         if self.repository.valid:
             self.repository.add_starred_at()
-            log('valid code repo {} with star {}'.format(
-                self.repository.name_with_owner, len(self.repository.starred_at)
-            ))
             if self.valid_commit():
                 self.add_star()
                 if self.star > 0:
@@ -113,6 +113,8 @@ class Contribution(Model):
         for r in repositories:
             c = Contribution(login, r)
             c.validate()
-            log('contribution all', login, r.name_with_owner, c.valid, c.star, c.commit_parts, c.star_pats)
+            log('contribution <{}> <{}> <{}> <{}> <{}> <{}>'.format(
+                login, r.name_with_owner, c.valid, c.star, c.commit_parts, c.star_pats
+            ))
             if c.valid:
                 yield c

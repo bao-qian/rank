@@ -36,10 +36,11 @@ class API(Database.base):
 
     @classmethod
     def _get(cls, query):
-        log('get result for query', query)
+        q = query.replace('\n', '')
+        log('query from cache', q)
         m = Database.session.query(API).filter(API.query == query).scalar()
         if m is None:
-            log('query not exist')
+            log('cache not exist', q)
             raise NotExist
         else:
             return m
@@ -93,7 +94,7 @@ class API(Database.base):
             log('v4 no rate remaing')
             # sleep 5 seconds more to guarantee success
             time.sleep(5 + (reset_at - now))
-            log('v4 finish sleep')
+            log('v4 finish sleep and try again')
 
     @classmethod
     def _get_v4(cls, query):
@@ -145,7 +146,6 @@ class API(Database.base):
                 startCursor
             }
             """
-        log(query)
         q = query.format(
             parameter=parameter_string,
             page_info=page_info,
@@ -174,6 +174,7 @@ class API(Database.base):
 
     @classmethod
     def get_v4_connection(cls, query, keyword, parameter, format_mapping):
+        log('get_v4_connection', query)
         q = cls._query_for_connection(query, parameter, format_mapping)
         r = cls._get_v4_cache(q)
         c = cls._connection_for_keyword(r['data'], keyword)
@@ -196,6 +197,7 @@ class API(Database.base):
 
     @classmethod
     def get_v4_object(cls, query):
+        log('get_v4_object', query)
         return cls._get_v4_cache(query)
 
     @classmethod

@@ -90,7 +90,6 @@ class Repository(Model):
     def repositories_from_nodes(cls, nodes):
         for node in nodes:
             n = node['node']
-            log('repositories_from_nodes <{}>'.format(n['name']))
             r = cls(n)
             yield r
 
@@ -146,7 +145,6 @@ class Repository(Model):
                 files = sorted(self.files, key=lambda file: file[0], reverse=True)
                 f1 = files[0]
                 f2 = files[1]
-                log('validate code <{}> <{}>'.format(files, files))
                 if f1[1] in config.invalid_language:
                     return False
                     # the top 2 type should be code instead of text
