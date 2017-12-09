@@ -77,7 +77,7 @@ def main():
     generate_html(us)
 
     end = time.time()
-    log('total time cost {}'.format(end - start))
+    log('total time cost {} seconds'.format(end - start))
 
 
 if __name__ == '__main__':
