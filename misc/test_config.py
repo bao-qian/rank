@@ -11,7 +11,6 @@ user_query_and_count = [
 count_per_request = 100
 cache_time = 36000000000000000
 contribution_year = 3
-valid_from = int(time.time()) - int(365 * 24 * 3600 * contribution_year)
 
 extra_user = [
     'happlebao',
