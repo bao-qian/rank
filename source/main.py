@@ -1,4 +1,5 @@
 import datetime
+import time
 import os
 
 from jinja2 import FileSystemLoader, Environment
@@ -68,10 +69,15 @@ def generate_html(users):
 
 
 def main():
+    start = time.time()
+
     init_db()
     us = all_data()
     log_data(us)
     generate_html(us)
+
+    end = time.time()
+    log('total time cost {}'.format(end - start))
 
 
 if __name__ == '__main__':
