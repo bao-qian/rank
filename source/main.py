@@ -36,6 +36,18 @@ def log_data(users):
                 formatted += f'{r.name_with_owner:40} {r.language:12} {c.star:5} '
         log(formatted)
 
+    language = {}
+    for u in users:
+        for l in u.language:
+            if l[0] in language:
+                language[l[0]].append((u.login, l[1]))
+            else:
+                language[l[0]] = [(u.login, l[1])]
+
+    for k, v in language.items():
+        log(k)
+        log(sorted(v, key=lambda s: s[1], reverse=True))
+
     log('finish log data to stdout')
 
 
