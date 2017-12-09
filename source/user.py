@@ -141,7 +141,7 @@ class User:
                 u.star = sum([c.star for c in u.contribution])
                 if u.star > 0:
                     ls = {}
-                    for c in cs:
+                    for c in u.contribution:
                         k = c.repository.language
                         ls[k] = ls.get(k, 0) + c.star
                     u.language = sorted(ls.items(), key=lambda l: l[1], reverse=True)
