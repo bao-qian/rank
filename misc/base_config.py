@@ -1,9 +1,5 @@
 import os
 
-import time
-
-import config
-
 root = os.path.dirname(os.path.dirname(__file__))
 static = os.path.join(root, 'static')
 misc = os.path.join(root, 'misc')
