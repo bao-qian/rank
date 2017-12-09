@@ -169,6 +169,7 @@ class Repository(Model):
             self.valid = False
             self.all_invalid.append((self.name_with_owner, self.total_start, self.name_with_owner, self.description))
         elif not self.valid_code_files():
+            self.valid = False
             self.all_invalid.append((self.name_with_owner, self.total_start, self.files))
         else:
             self.valid = True
@@ -189,9 +190,9 @@ class Repository(Model):
 
     def add_starred_at(self):
         query = self.query_connection()
-        edge = 'starredAt'
+        e = 'starredAt'
         format_mapping = dict(
-            edge=edge,
+            edge=e,
             owner=self.owner,
             name=self.name,
         )
@@ -203,14 +204,18 @@ class Repository(Model):
         connection = API.get_v4_connection(
             query, ['repository', 'stargazers'], parameter, format_mapping,
         )
+        unix_time = 0
+        edges = next(connection)
 
-        for e in connection:
-            for n in e:
-                utc_string = n['starredAt']
+        while True:
+            for e in edges:
+                utc_string = e['starredAt']
                 unix_time = unixtime_from_api_v4(utc_string)
                 self.starred_at.append(unix_time)
 
-                if unix_time > config.valid_from:
-                    connection.send(True)
-                else:
-                    connection.send(False)
+            should_continues = unix_time > config.valid_from
+            try:
+                connection.send(should_continues)
+            except StopIteration:
+                connection.close()
+                return

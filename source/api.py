@@ -177,23 +177,21 @@ class API(Database.base):
         q = cls._query_for_connection(query, parameter, format_mapping)
         r = cls._get_v4_cache(q)
         c = cls._connection_for_keyword(r['data'], keyword)
-        nodes = c['edges']
-        yield nodes
+        edges = c['edges']
+        yield edges
+        should_continue = True
 
-        while True:
-            should_continue = yield
-            if should_continue:
-                end_cursor = c['pageInfo']['endCursor']
-                has_next_page = c['pageInfo']['hasNextPage']
-                if end_cursor is not None or has_next_page:
-                    parameter['after'] = end_cursor
-                    q = cls._query_for_connection(query, parameter, format_mapping)
-                    r = cls._get_v4_cache(q)
-                    c = cls._connection_for_keyword(r['data'], keyword)
-                    nodes = c['edges']
-                    yield nodes
-                else:
-                    return
+        while should_continue:
+            end_cursor = c['pageInfo']['endCursor']
+            has_next_page = c['pageInfo']['hasNextPage']
+            if end_cursor is not None or has_next_page:
+                parameter['after'] = end_cursor
+                q = cls._query_for_connection(query, parameter, format_mapping)
+                r = cls._get_v4_cache(q)
+                c = cls._connection_for_keyword(r['data'], keyword)
+                edges = c['edges']
+                should_continue = yield edges
+                log('should_continue', should_continue)
             else:
                 return
 
