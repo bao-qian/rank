@@ -58,3 +58,4 @@ config.py
 .vagrant
 rank.html
 index.html
+test.py
