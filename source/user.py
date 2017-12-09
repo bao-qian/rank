@@ -98,18 +98,21 @@ class User:
             connection = API.get_v4_connection(
                 query, ['search'], parameter, format_mapping,
             )
+            edges = next(connection)
 
-            for edges in connection:
+            while True:
                 for e in edges:
                     e = e['node']
                     log('users_from_nodes <{}>'.format(e['name']))
                     yield User(e)
 
-                    if count == 0:
-                        connection.send(False)
-                    else:
-                        count = count - config.count_per_request
-                        connection.send(True)
+                count = count - config.count_per_request
+                should_continue = count != 0
+                try:
+                    edges = connection.send(should_continue)
+                except StopIteration:
+                    connection.close()
+                    return
 
     @classmethod
     def users_for_extra(cls):
@@ -135,7 +138,7 @@ class User:
         for i, u in enumerate(us):
             if u.login not in seen and u.login not in config.block_user:
                 seen.add(u.login)
-                log('user no.{} {}'.format(i, u.login))
+                log('user no.{} {} {}'.format(i, u.login, len(u.repositories)))
                 cs = Contribution.all(u.login, u.repositories)
                 u.contribution = sorted(cs, key=lambda c: c.star, reverse=True)
                 u.star = sum([c.star for c in u.contribution])

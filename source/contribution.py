@@ -56,9 +56,18 @@ class Contribution(Model):
     def validate(self):
         self.repository.validate()
         if self.repository.valid:
-            log('valid code repo', self.repository.name_with_owner)
+            self.repository.add_starred_at()
+            log('valid code repo {} with star {}'.format(
+                self.repository.name_with_owner, len(self.repository.starred_at)
+            ))
             if self.valid_commit():
-                self.repository.add_starred_at()
+                self.add_star()
+                if self.star > 0:
+                    self.valid = True
+                else:
+                    self.all_invalid.append(
+                        (self.repository.name_with_owner, self.commit, self.total_commit, self.star)
+                    )
             else:
                 self.all_invalid.append(
                     (self.repository.name_with_owner, self.commit, self.total_commit)
@@ -66,14 +75,13 @@ class Contribution(Model):
 
     def add_star(self):
         self.rate = self.commit / self.total_commit
-        self.star = int(self.repository.total_start * self.rate)
+        self.star = int(len(self.repository.starred_at) * self.rate)
 
     @classmethod
     def all(cls, login, repositories):
         for r in repositories:
             c = Contribution(login, r)
             c.validate()
+            log('contribution all', r.name_with_owner, c.valid, c.star)
             if c.valid:
-                c.add_star()
-                if c.star > 0:
-                    yield c
+                yield c
