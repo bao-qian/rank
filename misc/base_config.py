@@ -9,7 +9,7 @@ block_user = [
     'diwu',
     'xuzhezhaozhao',
     'rover12421',
-    'tiankon',
+    'tiankonguse',
 ]
 
 invalid_language = [
