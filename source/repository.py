@@ -32,6 +32,55 @@ class Repository(Model):
         self.valid = False
         self.files = []
 
+    @staticmethod
+    def _query():
+        q = """
+        edges {
+              node {
+                    name
+                    owner {
+                        login
+                    } 
+                    nameWithOwner
+                    url
+                    description
+                    primaryLanguage {
+                        name
+                    }       
+                    stargazers {
+                        totalCount
+                    }
+
+                }
+        }
+        """
+        return q
+
+    @classmethod
+    def query_pinned(cls):
+        r = cls._query()
+        q = """
+        pinnedRepositories(first: 6) {{
+            {}
+        }}
+        """.format(r)
+        return q
+
+    @classmethod
+    def query_popular(cls):
+        r = cls._query()
+        q = """
+        repositories(first: 6, orderBy: {{field: STARGAZERS, direction: DESC}}) {{
+            {}
+        }}
+        """.format(r)
+        return q
+
+    @classmethod
+    def query_for_contributors(cls, name_with_owner):
+        q = '/repos/{}/stats/contributors'.format(name_with_owner)
+        return q
+
     @classmethod
     def repositories_from_nodes(cls, nodes):
         for node in nodes:
@@ -118,52 +167,3 @@ class Repository(Model):
             self.all_invalid.append((self.name_with_owner, self.start_count, self.files))
         else:
             self.valid = True
-
-    @staticmethod
-    def _query():
-        q = """
-        edges {
-              node {
-                    name
-                    owner {
-                        login
-                    } 
-                    nameWithOwner
-                    url
-                    description
-                    primaryLanguage {
-                        name
-                    }       
-                    stargazers {
-                        totalCount
-                    }
-                    
-                }
-        }
-        """
-        return q
-
-    @classmethod
-    def query_pinned(cls):
-        r = cls._query()
-        q = """
-        pinnedRepositories(first: 6) {{
-            {}
-        }}
-        """.format(r)
-        return q
-
-    @classmethod
-    def query_popular(cls):
-        r = cls._query()
-        q = """
-        repositories(first: 6, orderBy: {{field: STARGAZERS, direction: DESC}}) {{
-            {}
-        }}
-        """.format(r)
-        return q
-
-    @classmethod
-    def query_for_contributors(cls, name_with_owner):
-        q = '/repos/{}/stats/contributors'.format(name_with_owner)
-        return q
