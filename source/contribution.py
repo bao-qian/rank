@@ -20,7 +20,7 @@ class Contribution(Model):
         self.login = login
         self.valid = False
         self.part = 4
-        self.interval_length = (config.contribution_year * 365 * 24 * 3600) // 4
+        self.interval_length = (config.contribution_year * 365 * 24 * 3600) // self.part
         self.commit_parts = [[0, 0] for _ in range(self.part)]
         self.star_pats = [0] * self.part
 
