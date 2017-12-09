@@ -95,21 +95,21 @@ class User:
                 'first': config.count_per_request,
             }
 
-            edges = API.get_v4_connection(
+            connection = API.get_v4_connection(
                 query, ['search'], parameter, format_mapping,
             )
 
-            for e in edges:
-                for n in e:
-                    n = n['node']
-                    log('users_from_nodes <{}>'.format(n['name']))
-                    yield User(n)
+            for edges in connection:
+                for e in edges:
+                    e = e['node']
+                    log('users_from_nodes <{}>'.format(e['name']))
+                    yield User(e)
 
                     if count == 0:
-                        edges.send(False)
+                        connection.send(False)
                     else:
                         count = count - config.count_per_request
-                        edges.send(True)
+                        connection.send(True)
 
     @classmethod
     def users_for_extra(cls):

@@ -9,6 +9,7 @@ user_query_and_count = [
 count_per_request = 1
 cache_time = 36000000000000000
 contribution_year = 3
+past = int(time.time()) - int(365 * 24 * 3600 * config.contribution_year)
 
 extra_user = [
     'vczh',

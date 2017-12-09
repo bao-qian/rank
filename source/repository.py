@@ -7,7 +7,11 @@ from source.exception import (
 from misc import config
 from source.model import Model
 from source.api import API
-from source.utility import log, log_error
+from source.utility import (
+    log,
+    log_error,
+    unixtime_from_api_v4,
+)
 
 
 class Repository(Model):
@@ -28,7 +32,8 @@ class Repository(Model):
         else:
             self.language = None
         self.url = node['url']
-        self.start_count = node['stargazers']['totalCount']
+        self.total_start = node['stargazers']['totalCount']
+        self.starred_at = []
         self.valid = False
         self.files = []
 
@@ -102,7 +107,7 @@ class Repository(Model):
             html = API.get_crawler(query)
         except ErrorCode:
             self.valid = False
-            self.all_invalid.append((self.name_with_owner, self.start_count, self.language))
+            self.all_invalid.append((self.name_with_owner, self.total_start, self.language))
         else:
             q = PyQuery(html)
             for item in q.items('.filter-item'):
@@ -157,13 +162,55 @@ class Repository(Model):
 
     def validate(self):
         # language may be none for some repo due to none files or other reason
-        if self.language is None or self.language in config.invalid_language or self.start_count == 0:
+        if self.language is None or self.language in config.invalid_language or self.total_start == 0:
             self.valid = False
-            self.all_invalid.append((self.name_with_owner, self.start_count, self.language))
+            self.all_invalid.append((self.name_with_owner, self.total_start, self.language))
         elif not self.valid_name_and_description():
             self.valid = False
-            self.all_invalid.append((self.name_with_owner, self.start_count, self.name_with_owner, self.description))
+            self.all_invalid.append((self.name_with_owner, self.total_start, self.name_with_owner, self.description))
         elif not self.valid_code_files():
-            self.all_invalid.append((self.name_with_owner, self.start_count, self.files))
+            self.all_invalid.append((self.name_with_owner, self.total_start, self.files))
         else:
             self.valid = True
+
+    @classmethod
+    def query_connection(cls):
+        q = """
+            repository(owner: "{owner}", name: "{name}") {{
+                stargazers({parameter}) {{
+                    {page_info}
+                    edges {{
+                        {edge}
+                    }}
+                }}
+            }}
+            """
+        return q
+
+    def add_starred_at(self):
+        query = self.query_connection()
+        edge = 'starredAt'
+        format_mapping = dict(
+            edge=edge,
+            owner=self.owner,
+            name=self.name,
+        )
+        parameter = {
+            'first': config.count_per_request,
+            'orderBy': '{field: STARRED_AT, direction: DESC}'
+        }
+
+        connection = API.get_v4_connection(
+            query, ['repository', 'stargazers'], parameter, format_mapping,
+        )
+
+        for e in connection:
+            for n in e:
+                utc_string = n['starredAt']
+                unix_time = unixtime_from_api_v4(utc_string)
+                self.starred_at.append(unix_time)
+
+                if unix_time > config.valid_from:
+                    connection.send(True)
+                else:
+                    connection.send(False)

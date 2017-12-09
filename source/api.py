@@ -24,6 +24,7 @@ from misc import (
 from source.database import Database
 from source.utility import (
     log,
+    unixtime_from_api_v4,
 )
 
 
@@ -83,8 +84,7 @@ class API(Database.base):
         log('v4 rate limit <{}> remaing <{}> cost <{}> resetAt <{}>'.format(
             limit, remaining, cost, reset_at
         ))
-        time_format = '%Y-%m-%dT%H:%M:%SZ'
-        reset_at = int(datetime.datetime.strptime(reset_at, time_format).timestamp())
+        reset_at = unixtime_from_api_v4(reset_at)
         now = int(time.time())
         log('v4 rate will reset in <{}>'.format(reset_at - now))
 
@@ -132,7 +132,7 @@ class API(Database.base):
         parameter_string = ""
         for k, v in parameter.items():
             # type is enum, so no double quote
-            if type(v) is str and k != 'type':
+            if type(v) is str and k != 'type' and k != 'orderBy':
                 parameter_string += f'{k}: "{v}" '
             else:
                 parameter_string += f'{k}: {v} '
