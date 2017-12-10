@@ -173,7 +173,7 @@ class API(Database.base):
 
     @classmethod
     def get_v4_connection(cls, query, keyword, parameter, format_mapping):
-        log('get_v4_connection', query)
+        log('get_v4_connection', query, parameter)
         q = cls._query_for_connection(query, parameter, format_mapping)
         r = cls._get_v4_cache(q)
         c = cls._connection_for_keyword(r['data'], keyword)
