@@ -6,7 +6,9 @@ user_query_and_count = [
     ('location:china followers:100..200', 1000),
     ('location:PRC followers:>=100', 1000),
 ]
-count_per_request = 100
+
+user_per_request = 100
+stargazers_per_request = 100
 cache_time = 86400
 contribution_year = 3
 

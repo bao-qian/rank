@@ -92,7 +92,7 @@ class User:
             parameter = {
                 'query': user_query,
                 'type': 'USER',
-                'first': config.count_per_request,
+                'first': config.user_per_request,
             }
 
             connection = API.get_v4_connection(
@@ -105,7 +105,7 @@ class User:
                     e = e['node']
                     yield User(e)
 
-                count = count - config.count_per_request
+                count = count - config.user_per_request
                 should_continue = count > 0
                 try:
                     edges = connection.send(should_continue)
