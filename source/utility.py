@@ -23,5 +23,6 @@ def log_dict(data):
 def unixtime_from_api_v4(utc_string):
     v4_time_format = '%Y-%m-%dT%H:%M:%SZ'
     dt = datetime.datetime.strptime(utc_string, v4_time_format)
+    dt = dt.replace(tzinfo=datetime.timezone.utc)
     unix_time = int(dt.timestamp())
     return unix_time
