@@ -62,7 +62,7 @@ def update():
     def update_code():
         with cd(Directory.base):
             sudo('git pull')
-        sudo('cp {} {}'.format(
+        sudo('cp -f {} {}'.format(
             PurePosixPath(Directory.misc, 'server_config.py'),
             PurePosixPath(Directory.misc, 'config.py')
         ))
