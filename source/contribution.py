@@ -90,17 +90,17 @@ class Contribution(Model):
     def validate(self):
         self.repository.validate()
         if self.repository.valid:
-            try:
-                self.repository.add_starred_at()
-            except GraphQLError:
-                # repository(owner: "Treri", name: "angular-require") not exist
-                # probally the user changed name and github cache is not updated
-                self.all_invalid.append(
-                    (self.login, self.repository.name_with_owner, self.repository.total_star)
-                )
-                return
-            else:
-                if self.valid_commit():
+            if self.valid_commit():
+                try:
+                    self.repository.add_starred_at()
+                except GraphQLError:
+                    # repository(owner: "Treri", name: "angular-require") not exist
+                    # probally the user changed name and github cache is not updated
+                    self.all_invalid.append(
+                        (self.login, self.repository.name_with_owner, self.repository.total_star)
+                    )
+                    return
+                else:
                     self.add_star()
                     if self.star > 0:
                         self.valid = True
@@ -108,10 +108,10 @@ class Contribution(Model):
                         self.all_invalid.append(
                             (self.login, self.repository.name_with_owner, self.commit, self.total_commit, self.star)
                         )
-                else:
-                    self.all_invalid.append(
-                        (self.login, self.repository.name_with_owner, self.commit, self.total_commit)
-                    )
+            else:
+                self.all_invalid.append(
+                    (self.login, self.repository.name_with_owner, self.commit, self.total_commit)
+                )
 
     @classmethod
     def all(cls, login, repositories):
