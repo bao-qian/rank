@@ -145,5 +145,5 @@ class User:
                         k = c.repository.language
                         ls[k] = ls.get(k, 0) + c.star
                     u.language = sorted(ls.items(), key=lambda l: l[1], reverse=True)
-                    log('end user no.{} {} {}'.format(i, u.login, u.language))
                     yield u
+                log('end user no.{} {} {}'.format(i, u.login, u.language))
