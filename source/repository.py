@@ -172,6 +172,9 @@ class Repository(Model):
             self.all_invalid.append((self.name_with_owner, self.total_star, self.files))
         else:
             self.valid = True
+        log('repository.validate <{}> <{}> <{}> <{}>'.format(
+            self.name_with_owner, self.total_star, self.valid, self.files
+        ))
 
     @classmethod
     def query_connection(cls):
