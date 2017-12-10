@@ -90,7 +90,7 @@ class Contribution(Model):
     def validate(self):
         self.repository.validate()
         log('repo {} {} {} {}'.format(
-            self.repository.name_with_owner, self.repository.total_start, self.repository.valid, self.repository.files
+            self.repository.name_with_owner, self.repository.total_star, self.repository.valid, self.repository.files
         ))
         if self.repository.valid:
             self.repository.add_starred_at()

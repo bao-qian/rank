@@ -33,7 +33,7 @@ class Repository(Model):
         else:
             self.language = None
         self.url = node['url']
-        self.total_start = node['stargazers']['totalCount']
+        self.total_star = node['stargazers']['totalCount']
         self.starred_at = []
         self.valid = False
         self.files = []
@@ -107,7 +107,7 @@ class Repository(Model):
             html = API.get_crawler(query)
         except ErrorCode:
             self.valid = False
-            self.all_invalid.append((self.name_with_owner, self.total_start, self.language))
+            self.all_invalid.append((self.name_with_owner, self.total_star, self.language))
         else:
             q = PyQuery(html)
             for item in q.items('.filter-item'):
@@ -161,15 +161,15 @@ class Repository(Model):
 
     def validate(self):
         # language may be none for some repo due to none files or other reason
-        if self.language is None or self.language in config.invalid_language or self.total_start == 0:
+        if self.language is None or self.language in config.invalid_language or self.total_star == 0:
             self.valid = False
-            self.all_invalid.append((self.name_with_owner, self.total_start, self.language))
+            self.all_invalid.append((self.name_with_owner, self.total_star, self.language))
         elif not self.valid_name_and_description():
             self.valid = False
-            self.all_invalid.append((self.name_with_owner, self.total_start, self.name_with_owner, self.description))
+            self.all_invalid.append((self.name_with_owner, self.total_star, self.name_with_owner, self.description))
         elif not self.valid_code_files():
             self.valid = False
-            self.all_invalid.append((self.name_with_owner, self.total_start, self.files))
+            self.all_invalid.append((self.name_with_owner, self.total_star, self.files))
         else:
             self.valid = True
 
