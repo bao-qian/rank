@@ -263,7 +263,7 @@ class API(Database.base):
                 cls._get_v3(query)
             except ErrorCode202:
                 time.sleep(5)
-                cls._get_v3(query)
+                cls.get_v3(query)
         else:
             if cls._valid_cache(m):
                 r = json.loads(m.response)
