@@ -37,7 +37,6 @@ class API(Database.base):
     @classmethod
     def _get(cls, query):
         q = query.replace('\n', '')
-        log('query from cache', q)
         m = Database.session.query(API).filter(API.query == query).scalar()
         if m is None:
             log('cache not exist', q)
@@ -219,7 +218,6 @@ class API(Database.base):
     def _get_v3(cls, query):
         base = 'https://api.github.com'
         url = '{}{}'.format(base, query)
-        log('get v3 url', url)
         headers = {'Authorization': 'bearer {}'.format(secret.token)}
         r = requests.get(url=url, headers=headers)
 
@@ -238,6 +236,7 @@ class API(Database.base):
 
     @classmethod
     def get_v3(cls, query):
+        log('get_v3', query)
         try:
             m = cls._get(query)
         except NotExist:
@@ -261,7 +260,6 @@ class API(Database.base):
     def _get_crawler(cls, query):
         base = 'https://github.com'
         url = '{}{}'.format(base, query)
-        log('get crawler url', url)
         agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " \
                 "AppleWebKit/537.36 (KHTML, like Gecko) " \
                 "Chrome/62.0.3202.94 Safari/537.36"
@@ -278,6 +276,7 @@ class API(Database.base):
 
     @classmethod
     def get_crawler(cls, query):
+        log('get_crawler', query)
         try:
             m = cls._get(query)
         except NotExist:
