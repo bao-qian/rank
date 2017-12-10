@@ -81,11 +81,21 @@ class Contribution(Model):
             else:
                 break
 
-        for i in range(config.contribution_year):
+        rate = 0
+        for i in range(self.part - 1, -1, -1):
             c = self.commit_parts[i]
             if c[1] > 0:
-                rate = c[0] / c[1]
+                if c[0] > 0:
+                    rate = c[0] / c[1]
+                    self.star += int(self.star_pats[i] * rate)
+                elif c[1] < 2:
+                    self.star += int(self.star_pats[i] * rate)
+                else:
+                    continue
+            elif c[0] == 0:
                 self.star += int(self.star_pats[i] * rate)
+            else:
+                continue
 
     def validate(self):
         self.repository.validate()
@@ -106,11 +116,12 @@ class Contribution(Model):
                         self.valid = True
                     else:
                         self.all_invalid.append(
-                            (self.login, self.repository.name_with_owner, self.commit, self.total_commit, self.star)
+                            ('star 0', self.login, self.repository.name_with_owner, self.commit, self.total_commit,
+                             self.star)
                         )
             else:
                 self.all_invalid.append(
-                    (self.login, self.repository.name_with_owner, self.commit, self.total_commit)
+                    ('commit not valid', self.login, self.repository.name_with_owner, self.commit, self.total_commit)
                 )
 
     @classmethod
