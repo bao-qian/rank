@@ -106,7 +106,7 @@ class User:
                     yield User(e)
 
                 count = count - config.count_per_request
-                should_continue = count != 0
+                should_continue = count > 0
                 try:
                     edges = connection.send(should_continue)
                 except StopIteration:
