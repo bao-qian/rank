@@ -20,6 +20,8 @@ cp misc/test_config.py misc/config.py
 pip install PyQuery SQLAlchemy
 python -m source.main 
 ```
+5. 打开 `static/index.html`
+6. 本地测试配置全新运行需要大概十分钟
 
 ## todo
 
