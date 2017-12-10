@@ -199,7 +199,7 @@ class Repository(Model):
             name=self.name,
         )
         parameter = {
-            'first': config.count_per_request,
+            'first': config.stargazers_per_request,
             'orderBy': '{field: STARRED_AT, direction: DESC}'
         }
 
