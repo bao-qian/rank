@@ -82,36 +82,38 @@ class User:
         return q
 
     @classmethod
+    def _users_for_query(cls, count, user_query):
+        query = cls.query_connection()
+        edge = cls.query_edge()
+        format_mapping = dict(
+            edge=edge,
+        )
+        parameter = {
+            'query': user_query,
+            'type': 'USER',
+            'first': config.user_per_request,
+        }
+        connection = API.get_v4_connection(
+            query, ['search'], parameter, format_mapping,
+        )
+        edges = next(connection)
+        while True:
+            for e in edges:
+                e = e['node']
+                yield User(e)
+
+            count = count - config.user_per_request
+            should_continue = count > 0
+            try:
+                edges = connection.send(should_continue)
+            except StopIteration:
+                connection.close()
+                return
+
+    @classmethod
     def users_for_query(cls):
         for user_query, count in config.user_query_and_count:
-            query = cls.query_connection()
-            edge = cls.query_edge()
-            format_mapping = dict(
-                edge=edge,
-            )
-            parameter = {
-                'query': user_query,
-                'type': 'USER',
-                'first': config.user_per_request,
-            }
-
-            connection = API.get_v4_connection(
-                query, ['search'], parameter, format_mapping,
-            )
-            edges = next(connection)
-
-            while True:
-                for e in edges:
-                    e = e['node']
-                    yield User(e)
-
-                count = count - config.user_per_request
-                should_continue = count > 0
-                try:
-                    edges = connection.send(should_continue)
-                except StopIteration:
-                    connection.close()
-                    return
+            yield from cls._users_for_query(count, user_query)
 
     @classmethod
     def users_for_extra(cls):
