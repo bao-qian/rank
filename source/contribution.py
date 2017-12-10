@@ -1,6 +1,6 @@
 import time
 
-from source.exception import ErrorCode
+from source.exception import ErrorCode, GraphQLError
 from misc import config
 from source.model import Model
 from source.repository import Repository
@@ -90,19 +90,26 @@ class Contribution(Model):
     def validate(self):
         self.repository.validate()
         if self.repository.valid:
-            self.repository.add_starred_at()
-            if self.valid_commit():
-                self.add_star()
-                if self.star > 0:
-                    self.valid = True
+            try:
+                self.repository.add_starred_at()
+            except GraphQLError:
+                # repository(owner: "Treri", name: "angular-require") not exist
+                # probally the user changed name and github cache is not updated
+                self.valid = False
+                return 
+            else:
+                if self.valid_commit():
+                    self.add_star()
+                    if self.star > 0:
+                        self.valid = True
+                    else:
+                        self.all_invalid.append(
+                            (self.repository.name_with_owner, self.commit, self.total_commit, self.star)
+                        )
                 else:
                     self.all_invalid.append(
-                        (self.repository.name_with_owner, self.commit, self.total_commit, self.star)
+                        (self.repository.name_with_owner, self.commit, self.total_commit)
                     )
-            else:
-                self.all_invalid.append(
-                    (self.repository.name_with_owner, self.commit, self.total_commit)
-                )
 
     @classmethod
     def all(cls, login, repositories):
