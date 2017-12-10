@@ -95,8 +95,10 @@ class Contribution(Model):
             except GraphQLError:
                 # repository(owner: "Treri", name: "angular-require") not exist
                 # probally the user changed name and github cache is not updated
-                self.valid = False
-                return 
+                self.all_invalid.append(
+                    (self.login, self.repository.name_with_owner, self.repository.total_star)
+                )
+                return
             else:
                 if self.valid_commit():
                     self.add_star()
@@ -104,11 +106,11 @@ class Contribution(Model):
                         self.valid = True
                     else:
                         self.all_invalid.append(
-                            (self.repository.name_with_owner, self.commit, self.total_commit, self.star)
+                            (self.login, self.repository.name_with_owner, self.commit, self.total_commit, self.star)
                         )
                 else:
                     self.all_invalid.append(
-                        (self.repository.name_with_owner, self.commit, self.total_commit)
+                        (self.login, self.repository.name_with_owner, self.commit, self.total_commit)
                     )
 
     @classmethod
