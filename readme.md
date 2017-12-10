@@ -10,13 +10,14 @@
 
 ## 本地运行
 
-python 要求 3.6
+1. python 要求 3.6。
+2. clone 代码。
+3. 生成一个 personal access token，并以 `token = 'xxxxxxxxxx'` 形式放在 `misc/secret.py` 中。
+4. 运行下面代码
 
 ```bash
-git clone https://github.com/happlebao/rank.git
-cd rank
 cp misc/test_config.py misc/config.py
-pip install Fabric3 PyQuery SQLAlchemy
+pip install PyQuery SQLAlchemy
 python -m source.main 
 ```
 
