@@ -26,7 +26,7 @@ class User:
         self.pinned_repositories = r1
         self.popular_repositories = r2
         self.contribution = []
-        self.language = {}
+        self.language = []
         self.star = 0
 
     @classmethod
