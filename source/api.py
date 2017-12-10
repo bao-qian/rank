@@ -217,12 +217,6 @@ class API(Database.base):
         reset_in = rate_reset - now
         return rate_limit, rate_remaing, rate_reset, reset_in
 
-        # if rate_remaing < 3:
-        #     log('v3 no rate remaing')
-        #     sleep 5 seconds more to guarantee success
-        #     time.sleep(5 + (rate_reset - now))
-        #     log('v3 finish sleep and try again')
-
     @classmethod
     def _get_v3(cls, query, cache=True):
         base = 'https://api.github.com'
