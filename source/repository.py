@@ -7,7 +7,7 @@ from source.exception import (
 )
 from misc import config
 from source.model import Model
-from source.api import API
+from source.api import API, api
 from source.utility import (
     log,
     log_error,
@@ -103,8 +103,10 @@ class Repository(Model):
     def add_code_files(self):
         # at least one language to get result
         query = '/{}/search?l=c'.format(self.name_with_owner)
+        # api = API()
         try:
-            html = API.get_crawler(query)
+            with api() as a:
+                html = a.get_crawler(query)
         except ErrorCode:
             self.valid = False
             self.all_invalid.append((self.name_with_owner, self.total_star, self.language))
@@ -202,10 +204,11 @@ class Repository(Model):
             'first': config.stargazers_per_request,
             'orderBy': '{field: STARRED_AT, direction: DESC}'
         }
-
-        connection = API.get_v4_connection(
-            query, ['repository', 'stargazers'], parameter, format_mapping,
-        )
+        # api = API()
+        with api() as a:
+            connection = a.get_v4_connection(
+                query, ['repository', 'stargazers'], parameter, format_mapping,
+            )
         unix_time = 0
         edges = next(connection)
 

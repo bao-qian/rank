@@ -5,7 +5,7 @@ from misc import config
 from source.model import Model
 from source.repository import Repository
 from source.utility import log
-from source.api import API
+from source.api import API, api
 
 
 class Contribution(Model):
@@ -26,9 +26,10 @@ class Contribution(Model):
 
     def add_commit(self):
         q = Repository.query_for_contributors(self.repository.name_with_owner)
-
+        # api = API()
         try:
-            cs = API.get_v3(q)
+            with api() as a:
+                cs = a.get_v3(q)
         except ErrorCode:
             cs = []
 

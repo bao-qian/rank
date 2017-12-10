@@ -1,7 +1,6 @@
-import datetime
 import json
 import time
-from enum import Enum
+from contextlib import contextmanager
 
 import requests
 from sqlalchemy import (
@@ -29,42 +28,44 @@ from source.utility import (
 )
 
 
-class API(Database.base):
+class APIModel(Database.base):
     __tablename__ = 'api'
     query = Column(String, primary_key=True)
     response = Column(String)
     unixtime = Column(Integer)
 
-    @classmethod
-    def _get(cls, query):
+    def valid_cache(self):
+        now = int(time.time())
+        t = now - self.unixtime
+        if t < config.cache_time:
+            return True
+        else:
+            return False
+
+
+class API:
+    def __init__(self):
+        self.session = Database.session()
+
+    def _get(self, query) -> APIModel:
         q = query.replace('\n', '')
-        m = Database.session.query(API).filter(API.query == query).scalar()
+        m = self.session.query(APIModel).filter(APIModel.query == query).scalar()
         if m is None:
             log('cache not exist', q)
             raise NotExist
         else:
             return m
 
-    @classmethod
-    def _valid_cache(cls, m):
-        now = int(time.time())
-        t = now - m.unixtime
-        if t < config.cache_time:
-            return True
-        else:
-            return False
-
-    @classmethod
-    def _set(cls, query, response):
+    def _set(self, query, response):
         log('set result for query', query)
         now = int(time.time())
-        c = API(
+        a = APIModel(
             query=query,
             response=response,
             unixtime=now,
         )
-        Database.session.merge(c)
-        Database.session.commit()
+        self.session.merge(a)
+        self.session.commit()
 
     @staticmethod
     def ensure_not_none(data, message):
@@ -75,8 +76,8 @@ class API(Database.base):
         if not valid:
             raise NoneError(message)
 
-    @classmethod
-    def _rate_v4(cls, response):
+    @staticmethod
+    def _rate_v4(response):
         rate_limit = response['data']['rateLimit']
         limit = rate_limit['limit']
         remaining = rate_limit['remaining']
@@ -86,8 +87,7 @@ class API(Database.base):
         reset_in = unixtime_from_api_v4(reset_at) - now
         return limit, remaining, cost, reset_at, reset_in
 
-    @classmethod
-    def _get_v4(cls, query, cache=True):
+    def _get_v4(self, query, cache=True):
         full_query = f"""
         {{
             rateLimit {{
@@ -109,13 +109,13 @@ class API(Database.base):
 
         if r.status_code == 200:
             j = r.json()
-            cls.ensure_not_none(j, f'query <{query}> result is <{j}>')
+            self.ensure_not_none(j, f'query <{query}> result is <{j}>')
 
             if 'errors' in j:
                 for e in j['errors']:
                     if e['type'] == 'RATE_LIMITED':
-                        j_rate = cls._get_v4('', cache=False)
-                        limit, remaining, cost, reset_at, reset_in = cls._rate_v4(j_rate)
+                        j_rate = self._get_v4('', cache=False)
+                        limit, remaining, cost, reset_at, reset_in = self._rate_v4(j_rate)
                         log('v4 query <{}> rate limit <{}> remaing <{}> cost <{}> resetAt <{}> reset_in <{}>'.format(
                             query, limit, remaining, cost, reset_at, reset_in
                         ))
@@ -123,21 +123,21 @@ class API(Database.base):
                         log('v4 sleep <{}> and try again <{}>'.format(reset_in, query))
                         time.sleep(reset_in + 3)
                         log('v4 finish sleep <{}>'.format(query))
-                        return cls._get_v4(query)
+                        return self._get_v4(query)
                 raise GraphQLError(full_query, j['errors'])
             else:
-                limit, remaining, cost, reset_at, reset_in = cls._rate_v4(j)
+                limit, remaining, cost, reset_at, reset_in = self._rate_v4(j)
                 log('v4 query <{}> rate limit <{}> remaing <{}> cost <{}> resetAt <{}> reset_in <{}>'.format(
                     query, limit, remaining, cost, reset_at, reset_in
                 ))
                 if cache:
-                    cls._set(query, r.text)
+                    self._set(query, r.text)
                 return j
         else:
             raise ErrorCode(r.status_code, query)
 
-    @classmethod
-    def _query_for_connection(cls, query, parameter, format_mapping):
+    @staticmethod
+    def _query_for_connection(query, parameter, format_mapping):
         parameter_string = ""
         for k, v in parameter.items():
             # type is enum, so no double quote
@@ -161,31 +161,29 @@ class API(Database.base):
         )
         return q
 
-    @classmethod
-    def _get_v4_cache(cls, query):
+    def _get_v4_cache(self, query):
         try:
-            m = cls._get(query)
+            m = self._get(query)
         except NotExist:
-            return cls._get_v4(query)
+            return self._get_v4(query)
         else:
-            if cls._valid_cache(m):
+            if m.valid_cache():
                 return json.loads(m.response)
             else:
-                return cls._get_v4(query)
+                return self._get_v4(query)
 
-    @classmethod
-    def _connection_for_keyword(cls, response, keyword):
+    @staticmethod
+    def _connection_for_keyword(response, keyword):
         c = response
         for k in keyword:
             c = c[k]
         return c
 
-    @classmethod
-    def get_v4_connection(cls, query, keyword, parameter, format_mapping):
+    def get_v4_connection(self, query, keyword, parameter, format_mapping):
         log('get_v4_connection', query, parameter)
-        q = cls._query_for_connection(query, parameter, format_mapping)
-        r = cls._get_v4_cache(q)
-        c = cls._connection_for_keyword(r['data'], keyword)
+        q = self._query_for_connection(query, parameter, format_mapping)
+        r = self._get_v4_cache(q)
+        c = self._connection_for_keyword(r['data'], keyword)
         edges = c['edges']
         yield edges
         should_continue = True
@@ -195,21 +193,20 @@ class API(Database.base):
             has_next_page = c['pageInfo']['hasNextPage']
             if end_cursor is not None or has_next_page:
                 parameter['after'] = end_cursor
-                q = cls._query_for_connection(query, parameter, format_mapping)
-                r = cls._get_v4_cache(q)
-                c = cls._connection_for_keyword(r['data'], keyword)
+                q = self._query_for_connection(query, parameter, format_mapping)
+                r = self._get_v4_cache(q)
+                c = self._connection_for_keyword(r['data'], keyword)
                 edges = c['edges']
                 should_continue = yield edges
             else:
                 return
 
-    @classmethod
-    def get_v4_object(cls, query):
+    def get_v4_object(self, query):
         log('get_v4_object', query)
-        return cls._get_v4_cache(query)
+        return self._get_v4_cache(query)
 
-    @classmethod
-    def _rate_v3(cls, response):
+    @staticmethod
+    def _rate_v3(response):
         rate_limit = int(response.headers['X-RateLimit-Limit'])
         rate_remaing = int(response.headers['X-RateLimit-Remaining'])
         rate_reset = int(response.headers['X-RateLimit-Reset'])
@@ -217,29 +214,28 @@ class API(Database.base):
         reset_in = rate_reset - now
         return rate_limit, rate_remaing, rate_reset, reset_in
 
-    @classmethod
-    def _get_v3(cls, query, cache=True):
+    def _get_v3(self, query, cache=True):
         base = 'https://api.github.com'
         url = '{}{}'.format(base, query)
         headers = {'Authorization': 'bearer {}'.format(secret.token)}
         r = requests.get(url=url, headers=headers)
 
         if r.status_code == 200:
-            rate_limit, rate_remaing, rate_reset, reset_in = cls._rate_v3(r)
+            rate_limit, rate_remaing, rate_reset, reset_in = self._rate_v3(r)
             log('v3 rate limit <{}> rate remaing <{}> rate reset <{}>  reset in <{}>'.format(
                 rate_limit, rate_remaing, rate_reset, reset_in,
             ))
 
             j = r.json()
-            cls.ensure_not_none(j, f'query <{query}> result is <{j}>')
+            self.ensure_not_none(j, f'query <{query}> result is <{j}>')
             if cache:
-                cls._set(query, r.text)
+                self._set(query, r.text)
             return j
         elif r.status_code == 202:
             raise ErrorCode202(202, query)
         # don't knwo when rate will be 0, so compare with 3
         elif r.status_code == 403:
-            rate_limit, rate_remaing, rate_reset, reset_in = cls._rate_v3(r)
+            rate_limit, rate_remaing, rate_reset, reset_in = self._rate_v3(r)
             log('v3 rate limit <{}> rate remaing <{}> rate reset <{}>  reset in <{}>'.format(
                 rate_limit, rate_remaing, rate_reset, reset_in,
             ))
@@ -253,30 +249,28 @@ class API(Database.base):
         else:
             raise ErrorCode(r.status_code, query)
 
-    @classmethod
-    def get_v3(cls, query):
+    def get_v3(self, query):
         log('get_v3', query)
         try:
-            m = cls._get(query)
+            m = self._get(query)
         except NotExist:
             try:
-                cls._get_v3(query)
+                self._get_v3(query)
             except ErrorCode202:
                 time.sleep(5)
-                cls._get_v3(query)
+                self._get_v3(query)
         else:
-            if cls._valid_cache(m):
+            if m.valid_cache():
                 r = json.loads(m.response)
                 return r
             else:
                 try:
-                    return cls._get_v3(query)
+                    return self._get_v3(query)
                 except ErrorCode202:
                     r = json.loads(m.response)
                     return r
 
-    @classmethod
-    def _get_crawler(cls, query):
+    def _get_crawler(self, query):
         base = 'https://github.com'
         url = '{}{}'.format(base, query)
         agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " \
@@ -286,22 +280,28 @@ class API(Database.base):
         r = requests.get(url=url, headers=headers)
         if r.status_code == 200:
             html = r.text
-            cls._set(query, html)
+            self._set(query, html)
             return html
         elif r.status_code == 451:
             raise ErrorCode451(451, query)
         else:
             raise ErrorCode(r.status_code, query)
 
-    @classmethod
-    def get_crawler(cls, query):
+    def get_crawler(self, query):
         log('get_crawler', query)
         try:
-            m = cls._get(query)
+            m = self._get(query)
         except NotExist:
-            return cls._get_crawler(query)
+            return self._get_crawler(query)
         else:
-            if cls._valid_cache(m):
+            if m.valid_cache():
                 return m.response
             else:
-                return cls._get_crawler(query)
+                return self._get_crawler(query)
+
+
+@contextmanager
+def api():
+    a = API()
+    yield a
+    a.session.close()

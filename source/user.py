@@ -1,6 +1,6 @@
 from source.exception import ErrorCode
 from misc import config
-from source.api import API
+from source.api import API, api
 from source.contribution import Contribution
 from source.repository import Repository
 from source.utility import log
@@ -93,9 +93,11 @@ class User:
             'type': 'USER',
             'first': config.user_per_request,
         }
-        connection = API.get_v4_connection(
-            query, ['search'], parameter, format_mapping,
-        )
+        # api = API()
+        with api() as a:
+            connection = a.get_v4_connection(
+                query, ['search'], parameter, format_mapping,
+            )
         edges = next(connection)
         while True:
             for e in edges:
@@ -119,8 +121,10 @@ class User:
     def users_for_extra(cls):
         for e in config.extra_user:
             q = User.query_object(e)
+            # api = API()
             try:
-                r = API.get_v4_object(q)
+                with api() as a:
+                    r = a.get_v4_object(q)
             except ErrorCode:
                 return
             else:
