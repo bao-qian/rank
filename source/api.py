@@ -260,10 +260,10 @@ class API(Database.base):
             m = cls._get(query)
         except NotExist:
             try:
-                cls._get_v3(query)
+                return cls._get_v3(query)
             except ErrorCode202:
                 time.sleep(5)
-                cls.get_v3(query)
+                return cls.get_v3(query)
         else:
             if cls._valid_cache(m):
                 r = json.loads(m.response)
