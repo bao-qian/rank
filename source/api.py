@@ -1,6 +1,7 @@
 import datetime
 import json
 import time
+from enum import Enum
 
 import requests
 from sqlalchemy import (
@@ -75,25 +76,15 @@ class API(Database.base):
             raise NoneError(message)
 
     @classmethod
-    def _check_rate_v4(cls, response):
+    def _rate_v4(cls, response):
         rate_limit = response['data']['rateLimit']
         limit = rate_limit['limit']
         remaining = rate_limit['remaining']
         cost = rate_limit['cost']
         reset_at = rate_limit['resetAt']
-        log('v4 rate limit <{}> remaing <{}> cost <{}> resetAt <{}>'.format(
-            limit, remaining, cost, reset_at
-        ))
-        reset_at = unixtime_from_api_v4(reset_at)
         now = int(time.time())
-        log('v4 rate will reset in <{}>'.format(reset_at - now))
-
-        # don't knwo when rate will be 0, so compare with 3
-        if remaining < 3:
-            log('v4 no rate remaing')
-            # sleep 5 seconds more to guarantee success
-            time.sleep(5 + (reset_at - now))
-            log('v4 finish sleep and try again')
+        reset_in = unixtime_from_api_v4(reset_at) - now
+        return limit, remaining, cost, reset_at, reset_in
 
     @classmethod
     def _get_v4(cls, query):
@@ -113,16 +104,31 @@ class API(Database.base):
             'query': full_query
         }
         headers = {'Authorization': 'bearer {}'.format(secret.token)}
+
         r = requests.post(url=url, json=json_query, headers=headers)
 
         if r.status_code == 200:
             j = r.json()
             cls.ensure_not_none(j, f'query <{query}> result is <{j}>')
+
             if 'errors' in j:
+                for e in j['errors']:
+                    if e['type'] == 'RATE_LIMITED':
+                        j_rate = cls._get_v4('')
+                        limit, remaining, cost, reset_at, reset_in = cls._rate_v4(j_rate)
+                        log('v4 query <{}> rate limit <{}> remaing <{}> cost <{}> resetAt <{}> reset_in <{}>'.format(
+                            query, limit, remaining, cost, reset_at, reset_in
+                        ))
+                        # +3 to ensure
+                        time.sleep(reset_in + 3)
+                        return cls._get_v4(query)
                 raise GraphQLError(full_query, j['errors'])
             else:
+                limit, remaining, cost, reset_at, reset_in = cls._rate_v4(j)
+                log('v4 query <{}> rate limit <{}> remaing <{}> cost <{}> resetAt <{}> reset_in <{}>'.format(
+                    query, limit, remaining, cost, reset_at, reset_in
+                ))
                 cls._set(query, r.text)
-                cls._check_rate_v4(j)
                 return j
         else:
             raise ErrorCode(r.status_code, query)
