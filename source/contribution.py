@@ -61,9 +61,9 @@ class Contribution(Model):
         self.add_commit()
         # at least x commit
         commit = sum([p[0] for p in self.commit_parts])
-        if self.login == self.repository.owner and commit > 3:
+        if self.login == self.repository.owner and commit > 1:
             return True
-        elif self.login != self.repository.owner and commit > 1:
+        elif self.login != self.repository.owner and commit > 0:
             return True
         else:
             return False
