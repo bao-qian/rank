@@ -87,7 +87,7 @@ class API(Database.base):
         return limit, remaining, cost, reset_at, reset_in
 
     @classmethod
-    def _get_v4(cls, query):
+    def _get_v4(cls, query, cache=True):
         full_query = f"""
         {{
             rateLimit {{
@@ -114,13 +114,15 @@ class API(Database.base):
             if 'errors' in j:
                 for e in j['errors']:
                     if e['type'] == 'RATE_LIMITED':
-                        j_rate = cls._get_v4('')
+                        j_rate = cls._get_v4('', cache=False)
                         limit, remaining, cost, reset_at, reset_in = cls._rate_v4(j_rate)
                         log('v4 query <{}> rate limit <{}> remaing <{}> cost <{}> resetAt <{}> reset_in <{}>'.format(
                             query, limit, remaining, cost, reset_at, reset_in
                         ))
                         # +3 to ensure
+                        log('v4 sleep <{}> and try again <{}>'.format(reset_in, query))
                         time.sleep(reset_in + 3)
+                        log('v4 finish sleep <{}>'.format(query))
                         return cls._get_v4(query)
                 raise GraphQLError(full_query, j['errors'])
             else:
@@ -128,7 +130,8 @@ class API(Database.base):
                 log('v4 query <{}> rate limit <{}> remaing <{}> cost <{}> resetAt <{}> reset_in <{}>'.format(
                     query, limit, remaining, cost, reset_at, reset_in
                 ))
-                cls._set(query, r.text)
+                if cache:
+                    cls._set(query, r.text)
                 return j
         else:
             raise ErrorCode(r.status_code, query)
@@ -206,37 +209,53 @@ class API(Database.base):
         return cls._get_v4_cache(query)
 
     @classmethod
-    def _check_rate_v3(cls, response):
+    def _rate_v3(cls, response):
         rate_limit = int(response.headers['X-RateLimit-Limit'])
-        rate_reset = int(response.headers['X-RateLimit-Reset'])
         rate_remaing = int(response.headers['X-RateLimit-Remaining'])
-        log('v3 rate limit <{}> rate remaing <{}>'.format(rate_limit, rate_remaing))
+        rate_reset = int(response.headers['X-RateLimit-Reset'])
         now = int(time.time())
-        log('v3 rate will reset in <{}>'.format(rate_reset - now))
+        reset_in = rate_reset - now
+        return rate_limit, rate_remaing, rate_reset, reset_in
 
-        if rate_remaing < 3:
-            log('v3 no rate remaing')
-            # sleep 5 seconds more to guarantee success
-            time.sleep(5 + (rate_reset - now))
-            log('v3 finish sleep and try again')
+        # if rate_remaing < 3:
+        #     log('v3 no rate remaing')
+        #     sleep 5 seconds more to guarantee success
+        #     time.sleep(5 + (rate_reset - now))
+        #     log('v3 finish sleep and try again')
 
     @classmethod
-    def _get_v3(cls, query):
+    def _get_v3(cls, query, cache=True):
         base = 'https://api.github.com'
         url = '{}{}'.format(base, query)
         headers = {'Authorization': 'bearer {}'.format(secret.token)}
         r = requests.get(url=url, headers=headers)
 
         if r.status_code == 200:
-            log('get v3 r', r)
+            rate_limit, rate_remaing, rate_reset, reset_in = cls._rate_v3(r)
+            log('v3 rate limit <{}> rate remaing <{}> rate reset <{}>  reset in <{}>'.format(
+                rate_limit, rate_remaing, rate_reset, reset_in,
+            ))
+
             j = r.json()
             cls.ensure_not_none(j, f'query <{query}> result is <{j}>')
-            cls._set(query, r.text)
-            cls._check_rate_v3(r)
+            if cache:
+                cls._set(query, r.text)
             return j
         elif r.status_code == 202:
             raise ErrorCode202(202, query)
         # don't knwo when rate will be 0, so compare with 3
+        elif r.status_code == 403:
+            rate_limit, rate_remaing, rate_reset, reset_in = cls._rate_v3(r)
+            log('v3 rate limit <{}> rate remaing <{}> rate reset <{}>  reset in <{}>'.format(
+                rate_limit, rate_remaing, rate_reset, reset_in,
+            ))
+            if rate_remaing == 0:
+                # +3 to ensure
+                log('v3 sleep <{}> and try again <{}>'.format(reset_in, query))
+                time.sleep(reset_in + 3)
+                log('v3 finish sleep <{}>'.format(query))
+            else:
+                raise ErrorCode(r.status_code, query)
         else:
             raise ErrorCode(r.status_code, query)
 
