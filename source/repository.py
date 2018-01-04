@@ -129,7 +129,7 @@ class Repository(Model):
                         count = int(count)
                         language = 'C'
                         self.files.append((count, language))
-                    if head[-len(text1):] == text1:
+                    elif head[-len(text1):] == text1:
                         count = head[:len(head) - len(text1)]
                         count = int(count)
                         language = 'C'
