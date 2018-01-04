@@ -120,7 +120,7 @@ class Repository(Model):
                     # the selected language has no number count in right sidebar
                     head = q('.codesearch-results h3').text().replace(' ', '').replace('\n', '').replace(',', '')
                     ''
-                    text0 = f'available code result sin {self.name_with_owner}'.replace(' ', '')
+                    text0 = f'available code results in {self.name_with_owner}'.replace(' ', '')
                     text1 = f'code results in {self.name_with_owner}'.replace(' ', '')
                     text2 = f'Results in {self.name_with_owner}'.replace(' ', '')
                     if head[-len(text0):] == text0:
