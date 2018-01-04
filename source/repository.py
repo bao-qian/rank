@@ -119,8 +119,16 @@ class Repository(Model):
                 else:
                     # the selected language has no number count in right sidebar
                     head = q('.codesearch-results h3').text().replace(' ', '').replace('\n', '').replace(',', '')
+                    ''
+                    text0 = f'available code result sin {self.name_with_owner}'.replace(' ', '')
                     text1 = f'code results in {self.name_with_owner}'.replace(' ', '')
                     text2 = f'Results in {self.name_with_owner}'.replace(' ', '')
+                    if head[-len(text0):] == text0:
+                        s = 'Showing'
+                        count = head[len(s):len(head) - len(text0)]
+                        count = int(count)
+                        language = 'C'
+                        self.files.append((count, language))
                     if head[-len(text1):] == text1:
                         count = head[:len(head) - len(text1)]
                         count = int(count)
